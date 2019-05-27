@@ -11,7 +11,7 @@
         android:theme="@style/AppTheme">
         <activity android:name=".ShowListActivity" />
         <activity android:name=".SettingsActivity" />
-        <activity android:name=".ChoixListActivity" />
+        <activity android:name=".ChoixListActivity"/>
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

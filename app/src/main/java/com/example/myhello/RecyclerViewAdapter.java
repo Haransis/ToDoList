@@ -11,20 +11,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
-import android.widget.RelativeLayout;
-import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.TextView;
 import java.io.FileOutputStream;
-import android.widget.Toast;
-
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,11 +26,11 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
     private ArrayList<String> mNomListe=new ArrayList<>();
     private Context mContext;
     private Class classe;
-    public ProfilListeToDo profil;
-    public String NomListe;
+    private ProfilListeToDo profil;
+    private String NomListe;
 
-    public RecyclerViewAdapter(ProfilListeToDo profil,String NomListe,ArrayList<String> mImageNames, Context mContext,Class classe) {
-        this.mNomListe = mImageNames;
+    public RecyclerViewAdapter(ProfilListeToDo profil, String NomListe, ArrayList<String> mNomListe, Context mContext, Class classe) {
+        this.mNomListe = mNomListe;
         this.mContext = mContext;
         this.classe = classe;
         this.profil = profil;
@@ -67,16 +60,16 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         return mNomListe.size();
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder{
+    class ViewHolder extends RecyclerView.ViewHolder{
 
         TextView nomListe;
         CoordinatorLayout parentLayout;
         CheckBox checkBox;
 
-        public ViewHolder(@NonNull View itemView) {
+        ViewHolder(@NonNull View itemView) {
             super(itemView);
-            checkBox =(CheckBox) itemView.findViewById(R.id.checkbox);
-            nomListe=(TextView) itemView.findViewById(R.id.item);
+            checkBox =itemView.findViewById(R.id.checkbox);
+            nomListe=itemView.findViewById(R.id.item);
             parentLayout=itemView.findViewById(R.id.parent_layout);
         }
     }
@@ -97,13 +90,6 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
                     Log.i("PMR",mNomListe.get(position));
                     mContext.startActivity(intent);
                 }
-                /*else{
-                    if(checkBox.isChecked()){
-                        Log.i("PMR","Checked");
-                    } else {
-                        Log.i("PMR","UnChecked");
-                    }
-                }*/
 
             }
         });
@@ -143,7 +129,8 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         FileOutputStream outputStream;
 
         try {
-            outputStream= mContext.getApplicationContext().openFileOutput(filename, mContext.getApplicationContext().MODE_PRIVATE);
+            mContext.getApplicationContext();
+            outputStream= mContext.getApplicationContext().openFileOutput(filename, Context.MODE_PRIVATE);
             outputStream.write(fileContents.getBytes());
             outputStream.close();
             Log.i("PMR","Sauvegarde du fichier"+p.getLogin());

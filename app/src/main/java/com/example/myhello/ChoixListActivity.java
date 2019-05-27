@@ -1,10 +1,13 @@
 package com.example.myhello;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -13,6 +16,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -57,53 +61,12 @@ public class ChoixListActivity extends AppCompatActivity /*implements ItemAdapte
         } catch (IOException e) {
             e.printStackTrace();
         }
-/*
-        try {
-            inputStream = openFileInput(filename);
-            int content;
-            while ((content = inputStream.read()) != -1) {
-                // convert to char and display it
-                sJsonLu = sJsonLu+(char)content;
-            }
-            inputStream.close();
-
-            profil = (ProfilListeToDo)gson.fromJson(sJsonLu,ProfilListeToDo.class);
-            Log.i("PMR",profil.getLogin());
-        }
-        catch (Exception e) {
-
-            *//* Creation d'un profil par defaut *//*
-            Log.i("TODO_ISA","Création du profil par défaut " + profil.getLogin());
-
-            String fileContents = gson.toJson(profil);
-            FileOutputStream outputStream;
-
-            try {
-                outputStream = openFileOutput(filename, Context.MODE_PRIVATE);
-                outputStream.write(fileContents.getBytes());
-                outputStream.close();
-                Log.i("TODO_ISA","Création du fichier monprofil_json");
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                Log.i("TODO_ISA","Impossible de créer le fichier de sauvegarde du profil par défaut");
-            }
-
-        }*/
-//Ça c'était la correction de la prof.
 
         String s = "Listes des ToDo de ";
         s += profil.getLogin() + " :";
 
-
         TextView tv = findViewById(R.id.tvInfo);
         tv.setText(s);
-
-        /*Avec les préférences*/
-
-//        SharedPreferences preferencesAppli = PreferenceManager.getDefaultSharedPreferences(this);
-//        String sPref = preferencesAppli.getString("cle","rien");
-//        TextView tvPref = (TextView) findViewById(R.id.tvPref);
-//        tvPref.setText(sPref);
 
         List<ListeToDo> ListeDesToDo = profil.getMesListeToDo();
         for (int k=0; k<ListeDesToDo.size();k++)
@@ -111,16 +74,29 @@ public class ChoixListActivity extends AppCompatActivity /*implements ItemAdapte
 
         RecyclerView recyclerView = findViewById(R.id.recycler_view);
         RecyclerViewAdapter adapter = new RecyclerViewAdapter(profil,"",mNomListe,this,ChoixListActivity.class);
-//        ItemAdapter adapter = new ItemAdapter(mNomListe,this);
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        final EditText editText = findViewById(R.id.edtListe);
-        final Button button = findViewById(R.id.button);
+        /*final EditText editText = findViewById(R.id.edtListe);*/
+        final FloatingActionButton floatingActionButton = findViewById(R.id.fab);
         final ProfilListeToDo finalProfil = profil;
-        button.setOnClickListener(new View.OnClickListener() {
+
+        floatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                CreerAlertDialog(finalProfil);
+            }
+        });
+    }
+
+    private void CreerAlertDialog(final ProfilListeToDo finalProfil) {
+        final EditText editText = new EditText(this);
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        alertDialogBuilder.setMessage("Entrez le nom de la liste");
+        alertDialogBuilder.setView(editText);
+        alertDialogBuilder.setPositiveButton("Valider",new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface arg0, int arg1) {
                 ListeToDo newListe = new ListeToDo();
                 newListe.setTitreListeToDo(editText.getText().toString());
                 finalProfil.ajouteListe(newListe);
@@ -131,7 +107,16 @@ public class ChoixListActivity extends AppCompatActivity /*implements ItemAdapte
                 startActivity(intent);
             }
         });
+        alertDialogBuilder.setNegativeButton("Annuler",new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                finish();
+            }
+        });
+        AlertDialog alertDialog = alertDialogBuilder.create();
+        alertDialog.show();
     }
+
     public void sauveProfilToJsonFile(ProfilListeToDo p)
     {
         final GsonBuilder builder = new GsonBuilder();
