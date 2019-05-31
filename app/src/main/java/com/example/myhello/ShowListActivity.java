@@ -4,22 +4,26 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.CompoundButton;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ShowListActivity extends AppCompatActivity {
+public class ShowListActivity extends AppCompatActivity{
 
     private ArrayList<String> mNomItem=new ArrayList<>();
     private String nomListe;
+    private ProfilListeToDo profil;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,8 +69,9 @@ public class ShowListActivity extends AppCompatActivity {
             }
         }
         RecyclerView recyclerView = findViewById(R.id.recycler_view);
-        RecyclerViewAdapter adapter = new RecyclerViewAdapter(profil,nomListe,mNomItem,this,ShowListActivity.class);
+        RecyclerViewAdapter2 adapter = new RecyclerViewAdapter2(mNomItem,profil,this,nomListe);
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
     }
+
 }

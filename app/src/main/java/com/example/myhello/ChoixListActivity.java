@@ -5,14 +5,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -27,7 +27,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ChoixListActivity extends AppCompatActivity /*implements ItemAdapter.ActionListener*/{
+public class ChoixListActivity extends AppCompatActivity implements RecyclerViewAdapter1.OnListListener {
 
     private ArrayList<String> mNomListe=new ArrayList<>();
 
@@ -37,7 +37,6 @@ public class ChoixListActivity extends AppCompatActivity /*implements ItemAdapte
         setContentView(R.layout.activity_liste_to_dos);
 
         /* Récupération du bundle de la première activité */
-
         Bundle b = this.getIntent().getExtras();
         final GsonBuilder builder = new GsonBuilder();
         final Gson gson = builder.create();
@@ -73,11 +72,10 @@ public class ChoixListActivity extends AppCompatActivity /*implements ItemAdapte
             mNomListe.add(ListeDesToDo.get(k).getTitreListeToDo());
 
         RecyclerView recyclerView = findViewById(R.id.recycler_view);
-        RecyclerViewAdapter adapter = new RecyclerViewAdapter(profil,"",mNomListe,this,ChoixListActivity.class);
+        RecyclerViewAdapter1 adapter = new RecyclerViewAdapter1(mNomListe,this);
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        /*final EditText editText = findViewById(R.id.edtListe);*/
         final FloatingActionButton floatingActionButton = findViewById(R.id.fab);
         final ProfilListeToDo finalProfil = profil;
 
@@ -100,8 +98,8 @@ public class ChoixListActivity extends AppCompatActivity /*implements ItemAdapte
                 ListeToDo newListe = new ListeToDo();
                 newListe.setTitreListeToDo(editText.getText().toString());
                 finalProfil.ajouteListe(newListe);
-                Log.i("PMR","Ajout de " + newListe.getTitreListeToDo());
                 sauveProfilToJsonFile(finalProfil);
+                //TODO : un refresh plus classieux ne serait pas de trop.
                 Intent intent = getIntent();
                 finish();
                 startActivity(intent);
@@ -137,6 +135,14 @@ public class ChoixListActivity extends AppCompatActivity /*implements ItemAdapte
         }
     }
 
-
-
+    public void onListClick(int position) {
+        Intent intent = new Intent(this,ShowListActivity.class);
+        Bundle data = new Bundle();
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
+        data.putString("profil",settings.getString("pseudo",""));
+        intent.putExtras(data);
+        intent.putExtra("liste",mNomListe.get(position));
+        Log.i("PMR",mNomListe.get(position));
+        this.startActivity(intent);
+    }
 }
