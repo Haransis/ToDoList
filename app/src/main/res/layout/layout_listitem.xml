@@ -4,16 +4,15 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="?attr/selectableItemBackground"
     android:id="@+id/parent_layout">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/liste"
-        android:textSize="30dp"
-        android:layout_centerVertical="true"
-        android:layout_margin="30dp"
+        android:textSize="20dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginLeft="50dp"
         android:id="@+id/item"/>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

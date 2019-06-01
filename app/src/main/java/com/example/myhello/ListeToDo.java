@@ -78,4 +78,11 @@ public class ListeToDo implements Serializable {
         retour = "Liste : " + this.getTitreListeToDo()+ "Items : " + this.getLesItems().toString();
         return retour;
     }
+
+    public boolean isDone(){
+        for(int i=0;i<lesItems.size();i++){
+            if (!lesItems.get(i).getFait()){return false;}
+        }
+        return true;
+    }
 }
