@@ -17,6 +17,7 @@ import android.widget.Toast;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -34,8 +35,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private EditText edtPseudo = null;
     private Intent myIntent = null;
     public Bundle myBdl =null;
-    public ListeToDo ListeTest;
-    public ListeToDo ListeTest2;
 
     private void alerter(String s) {
         Log.i(CAT,s);
@@ -47,29 +46,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        ItemToDo item1 = new ItemToDo("Arroser les plantes");
-        ItemToDo item2 = new ItemToDo("GoFluent");
-        ItemToDo item3 = new ItemToDo("Vaisselle");
-        ItemToDo item4 = new ItemToDo("Lessive");
-        ItemToDo item5 = new ItemToDo("Planter");
-        ItemToDo item6 = new ItemToDo("Semer");
-        ItemToDo item7 = new ItemToDo("Imaginer");
-
-        ListeTest = new ListeToDo();
-
-        ListeTest.setTitreListeToDo("Quotidien");
-        ListeTest.ajouterItem(item1);
-        ListeTest.ajouterItem(item2);
-        ListeTest.ajouterItem(item3);
-        ListeTest.ajouterItem(item4);
-
-        ListeTest2 = new ListeToDo();
-
-        ListeTest2.setTitreListeToDo("Nouveau");
-        ListeTest2.ajouterItem(item5);
-        ListeTest2.ajouterItem(item6);
-        ListeTest2.ajouterItem(item7);
 
         btnOK = findViewById(R.id.btnOK);
         edtPseudo = findViewById(R.id.edtPseudo);
@@ -92,34 +68,36 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         switch (v.getId()) {
             case R.id.btnOK :
-
                 String pseudo = edtPseudo.getText().toString();
-                ProfilListeToDo login = new ProfilListeToDo(pseudo);
-                login.ajouteListe(ListeTest);
-                login.ajouteListe(ListeTest2);
-                sauveProfilToJsonFile(login);
+                File file = new File(getApplicationContext().getFilesDir(),pseudo);
+                if(!file.exists()) {
+                    Log.i("PMR","le fichier n'existe pas");
+                    ProfilListeToDo login = new ProfilListeToDo(pseudo);
+                    sauveProfilToJsonFile(login);
+                    //Sauvegarde du pseudo
+                    SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
+                    SharedPreferences.Editor editor = settings.edit();
+                    editor.clear();
+                    editor.putString("pseudo", login.getLogin());
+                    editor.apply();
+                    Log.i("PMR",settings.getString("pseudo",""));
 
-                //Sauvegarde du pseudo
-                SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
-                SharedPreferences.Editor editor = settings.edit();
-                editor.clear();
-                editor.putString("pseudo",pseudo);
+                    //Passage à la nouvelle activité
+                    myIntent = new Intent(this, ChoixListActivity.class);
+                    startActivity(myIntent);
+                    break;
+                }
 
-                //Ajout de l'heure de connexion
-                SimpleDateFormat sdf = new SimpleDateFormat(("yyyyMMdd_HH:mm"));
-                String currentDateAndTime = sdf.format(new Date());
-                editor.putString("dateLogin",currentDateAndTime);
-                editor.commit();
+                else{
+                    SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
+                    SharedPreferences.Editor editor = settings.edit();
+                    editor.clear();
+                    editor.putString("pseudo", pseudo);
 
-
-                //Passage à la nouvelle activité
-                //On stocke dans le bundle
-                myIntent = new Intent(this,ChoixListActivity.class);
-                Bundle data = new Bundle();
-                data.putString("profil",login.getLogin());
-                myIntent.putExtras(data);
-                startActivity(myIntent);
-                break;
+                    myIntent = new Intent(this, ChoixListActivity.class);
+                    startActivity(myIntent);
+                    break;
+                }
 
             case R.id.edtPseudo :
                 alerter("Saisir votre pseudo");

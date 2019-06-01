@@ -53,15 +53,13 @@ public class ProfilListeToDo implements Serializable {
     public int rechercherListe(String s)
     {
         int retour = -1;
-        Boolean trouve = Boolean.FALSE;
-        for (int i=0; i < this.mesListeToDo.size() && !trouve ;i++)
+        for (int i=0; i < this.mesListeToDo.size() ;i++)
         {
+            Log.i("PMR","on compare " + this.mesListeToDo.get(i).getTitreListeToDo() + "et " + s);
             if (this.mesListeToDo.get(i).getTitreListeToDo().equals(s)){
-                Log.i("PMR1",Integer.toString(retour));
-                Log.i("PMR2",Integer.toString(i));
+                Log.i("PMR","on a trouvé");
                 retour=i;
                 i=this.mesListeToDo.size();
-                trouve=Boolean.TRUE;
             }
         }
         return retour;

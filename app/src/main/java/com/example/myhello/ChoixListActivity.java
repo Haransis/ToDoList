@@ -36,15 +36,14 @@ public class ChoixListActivity extends AppCompatActivity implements RecyclerView
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_liste_to_dos);
 
-        /* Récupération du bundle de la première activité */
-        Bundle b = this.getIntent().getExtras();
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
         final GsonBuilder builder = new GsonBuilder();
         final Gson gson = builder.create();
 
         FileInputStream inputStream;
         String sJsonLu="";
         ProfilListeToDo profil = new ProfilListeToDo();
-        String filename = b.getString("profil");
+        String filename = settings.getString("pseudo","");
 
         try {
             inputStream = openFileInput(filename);
@@ -138,11 +137,8 @@ public class ChoixListActivity extends AppCompatActivity implements RecyclerView
     public void onListClick(int position) {
         Intent intent = new Intent(this,ShowListActivity.class);
         Bundle data = new Bundle();
-        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
-        data.putString("profil",settings.getString("pseudo",""));
         intent.putExtras(data);
         intent.putExtra("liste",mNomListe.get(position));
-        Log.i("PMR",mNomListe.get(position));
         this.startActivity(intent);
     }
 }

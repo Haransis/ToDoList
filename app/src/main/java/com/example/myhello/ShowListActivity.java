@@ -8,7 +8,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.CompoundButton;
@@ -40,16 +42,14 @@ public class ShowListActivity extends AppCompatActivity{
             Log.i("PMR",nomListe);
         }
 
-        /* Récupération du bundle de la première activité */
-
-        Bundle b = this.getIntent().getExtras();
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
         final GsonBuilder builder = new GsonBuilder();
         final Gson gson = builder.create();
 
         FileInputStream inputStream;
         String sJsonLu="";
         ProfilListeToDo profil = new ProfilListeToDo();
-        String filename = b.getString("profil");
+        String filename =settings.getString("pseudo","");
 
         try {
             inputStream = openFileInput(filename);
@@ -102,7 +102,6 @@ public class ShowListActivity extends AppCompatActivity{
                 List<ListeToDo> Liste = finalProfil.getMesListeToDo();
                 Liste.get(finalProfil.rechercherListe(nomListe)).ajouterItem(newItem);
                 sauveProfilToJsonFile(finalProfil);
-                //TODO : un refresh plus classieux ne serait pas de trop.
                 Intent intent = getIntent();
                 finish();
                 startActivity(intent);

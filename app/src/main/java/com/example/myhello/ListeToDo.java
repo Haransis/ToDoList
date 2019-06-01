@@ -1,5 +1,7 @@
 package com.example.myhello;
 
+import android.util.Log;
+
 import com.example.myhello.ItemToDo;
 
 import java.io.Serializable;
@@ -60,18 +62,17 @@ public class ListeToDo implements Serializable {
     public int rechercherItem(String s)
     {
         int retour = -1;
-        Boolean trouve = Boolean.FALSE;
         for (int i=0; i < this.lesItems.size() ;i++)
         {
-            if (this.lesItems.get(i).getDescription() == s)
+            if (this.lesItems.get(i).getDescription().equals(s))
             {
                 retour=i;
                 i=this.lesItems.size();
-                trouve=Boolean.TRUE;
             }
         }
         return retour;
     }
+
     @Override
     public String toString() {
         String retour;
