@@ -37,28 +37,10 @@ public class ChoixListActivity extends AppCompatActivity implements RecyclerView
         setContentView(R.layout.activity_liste_to_dos);
 
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
-        final GsonBuilder builder = new GsonBuilder();
-        final Gson gson = builder.create();
-
-        FileInputStream inputStream;
-        String sJsonLu="";
-        ProfilListeToDo profil = new ProfilListeToDo();
         String filename = settings.getString("pseudo","");
 
-        try {
-            inputStream = openFileInput(filename);
-            int content;
-            while ((content = inputStream.read()) != -1) {
-                // convert to char and display it
-                sJsonLu = sJsonLu+(char)content;
-            }
-            inputStream.close();
-            profil = (ProfilListeToDo)gson.fromJson(sJsonLu,ProfilListeToDo.class);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        ProfilListeToDo profil = lectureFromJson(filename);
+
 
         String s = "Listes des ToDo de ";
         s += profil.getLogin() + " :";
@@ -140,5 +122,29 @@ public class ChoixListActivity extends AppCompatActivity implements RecyclerView
         intent.putExtras(data);
         intent.putExtra("liste",mNomListe.get(position));
         this.startActivity(intent);
+    }
+
+    public ProfilListeToDo lectureFromJson(String fileName){
+        final GsonBuilder builder = new GsonBuilder();
+        final Gson gson = builder.create();
+        FileInputStream inputStream;
+        String sJsonLu="";
+        ProfilListeToDo profil = new ProfilListeToDo();
+
+        try {
+            inputStream = openFileInput(fileName);
+            int content;
+            while ((content = inputStream.read()) != -1) {
+                // convert to char and display it
+                sJsonLu = sJsonLu+(char)content;
+            }
+            inputStream.close();
+            profil = (ProfilListeToDo)gson.fromJson(sJsonLu,ProfilListeToDo.class);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return profil;
     }
 }

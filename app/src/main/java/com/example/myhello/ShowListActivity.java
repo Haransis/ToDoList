@@ -43,28 +43,9 @@ public class ShowListActivity extends AppCompatActivity{
         }
 
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
-        final GsonBuilder builder = new GsonBuilder();
-        final Gson gson = builder.create();
+        String filename = settings.getString("pseudo","");
 
-        FileInputStream inputStream;
-        String sJsonLu="";
-        ProfilListeToDo profil = new ProfilListeToDo();
-        String filename =settings.getString("pseudo","");
-
-        try {
-            inputStream = openFileInput(filename);
-            int content;
-            while ((content = inputStream.read()) != -1) {
-                // convert to char and display it
-                sJsonLu = sJsonLu+(char)content;
-            }
-            inputStream.close();
-            profil = gson.fromJson(sJsonLu,ProfilListeToDo.class);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        ProfilListeToDo profil = lectureFromJson(filename);
 
         List<ListeToDo> Liste = profil.getMesListeToDo();
 
@@ -135,6 +116,30 @@ public class ShowListActivity extends AppCompatActivity{
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public ProfilListeToDo lectureFromJson(String fileName){
+        final GsonBuilder builder = new GsonBuilder();
+        final Gson gson = builder.create();
+        FileInputStream inputStream;
+        String sJsonLu="";
+        ProfilListeToDo profil = new ProfilListeToDo();
+
+        try {
+            inputStream = openFileInput(fileName);
+            int content;
+            while ((content = inputStream.read()) != -1) {
+                // convert to char and display it
+                sJsonLu = sJsonLu+(char)content;
+            }
+            inputStream.close();
+            profil = (ProfilListeToDo)gson.fromJson(sJsonLu,ProfilListeToDo.class);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return profil;
     }
 
 }
