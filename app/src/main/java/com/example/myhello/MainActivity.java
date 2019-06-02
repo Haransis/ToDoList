@@ -19,22 +19,17 @@ import com.google.gson.GsonBuilder;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 // L'activité implémente l'interface 'onClickListener'
 // Une 'interface' est un "contrat"
 // qui définit des fonctions à implémenter
-// Ici, l'interface "onClickLister" demande que la classe
+// Ici, l'interface "onClickListener" demande que la classe
 // qui l'implémente fournisse une méthode onClick
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener, ProfilToJsonFile {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     public final String CAT="PMR";
-    private Button btnOK = null;
     private EditText edtPseudo = null;
-    private Intent myIntent = null;
-    public Bundle myBdl =null;
 
     private void alerter(String s) {
         Log.i(CAT,s);
@@ -47,14 +42,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        btnOK = findViewById(R.id.btnOK);
-        edtPseudo = findViewById(R.id.edtPseudo);
+        // On relie les éléments du layout activity_main à l'activité :
 
+
+        Button btnOK = findViewById(R.id.btnOK); // Un bouton qui permet de valider le choix
+        edtPseudo = findViewById(R.id.edtPseudo); // Un editText qui permet de saisir le choix
+
+        // On demande à l'activité de déclencher un évènement lors d'un clique sur le bouton et l'editText.
         btnOK.setOnClickListener(this);
         edtPseudo.setOnClickListener(this);
-
     }
 
+    // On affiche le dernier pseudo utilisé i.e. celui stocké dans les préférences
     @Override
     protected void onStart() {
         super.onStart();
@@ -63,13 +62,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         edtPseudo.setText(settings.getString("pseudo",""));
     }
 
+    // Généralement, on préférera instancier localement la méthode onClick.
+    // Ici, j'ai repris la correction du TP.
     @Override
     public void onClick(View v) {
-
+        Intent myIntent = null;
         switch (v.getId()) {
-            case R.id.btnOK :
+            case R.id.btnOK : // si le clique est sur le bouton :
                 String pseudo = edtPseudo.getText().toString();
                 File file = new File(getApplicationContext().getFilesDir(),pseudo);
+
+                // On vérifie si le fichier correspondant à ce qu'a rentré l'utilisateur existe
+                // Si ce n'est pas le cas, on créée le fichier et on change les Préférences.
                 if(!file.exists()) {
                     Log.i("PMR","le fichier n'existe pas");
                     ProfilListeToDo login = new ProfilListeToDo(pseudo);
@@ -88,6 +92,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     break;
                 }
 
+                // Sinon, on se contente de changer les Préférences.
                 else{
                     SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
                     SharedPreferences.Editor editor = settings.edit();
@@ -99,27 +104,30 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     break;
                 }
 
-            case R.id.edtPseudo :
+            case R.id.edtPseudo : // si le clique est sur l'editText, on affiche un Toast
                 alerter("Saisir votre pseudo");
                 break;
 
         }
     }
 
+    // permet la création de la barre de menu à partir du xml du menu
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu, menu);
         return true;
     }
+
+    // permet de choisir
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         switch (id){
-            case R.id.action_account:
+            case R.id.action_account: // dans le cas où l'utilisateur a choisi le menu Compte
                 alerter("Menu Compte");
                 break;
 
-            case R.id.action_settings:
+            case R.id.action_settings: // dans le cas où l'utilisateur a choisi les Préférences
                 Intent toSettings=new Intent(this,SettingsActivity.class);
                 startActivity(toSettings);
                 break;
@@ -128,15 +136,26 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return super.onOptionsItemSelected(item);
     }
 
+    // La méthode sauveProfilToJsonFile permet de sauvegarder un profil p sous
+    // la forme d'un fichier profil.json
     public void sauveProfilToJsonFile(ProfilListeToDo p)
     {
+        // un GsonBuilder permet la création d'une chaîne de caractère
         final GsonBuilder builder = new GsonBuilder();
+        // le gson est la création du GsonBuilder
         final Gson gson = builder.create();
+
+        // le nom du fichier à créer
         String filename = p.getLogin();
+        // le contenu du fichier
         String fileContents = gson.toJson(p);
+
+        // ce qui sortira de l'activité
         FileOutputStream outputStream;
 
         try {
+            // on dit à l'outputStream d'écrire dans filename
+            // si filename n'existe pas, il est créée
             outputStream = openFileOutput(filename, Context.MODE_PRIVATE);
             outputStream.write(fileContents.getBytes());
             outputStream.close();
@@ -147,6 +166,4 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             e.printStackTrace();
         }
     }
-
-
 }

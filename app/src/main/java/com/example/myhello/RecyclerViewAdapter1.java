@@ -16,6 +16,7 @@ public class RecyclerViewAdapter1 extends RecyclerView.Adapter<RecyclerViewAdapt
     private OnListListener mOnListListener;
 
 
+    // Constructeur de l'adapter du recyclerview
     public RecyclerViewAdapter1(ArrayList<String> NomListe, OnListListener onListListener){
         this.mNomListe = NomListe;
         this.mOnListListener = onListListener;
@@ -23,6 +24,7 @@ public class RecyclerViewAdapter1 extends RecyclerView.Adapter<RecyclerViewAdapt
 
     @NonNull
     @Override
+    // La création de l'Adapter provoque la création du ViewHolder
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.layout_listitem, parent,false);
         return new ViewHolder(view,mOnListListener);
@@ -42,9 +44,9 @@ public class RecyclerViewAdapter1 extends RecyclerView.Adapter<RecyclerViewAdapt
         CheckBox checkBox;
         OnListListener mOnListListener;
 
+        // le ViewHolder permet d'ordonner la liste des item
         ViewHolder(@NonNull View itemView, OnListListener onListListener) {
             super(itemView);
-            checkBox =itemView.findViewById(R.id.checkbox);
             nomListe=itemView.findViewById(R.id.item);
             parentLayout=itemView.findViewById(R.id.parent_layout);
             this.mOnListListener = onListListener;
@@ -53,18 +55,19 @@ public class RecyclerViewAdapter1 extends RecyclerView.Adapter<RecyclerViewAdapt
         }
 
         @Override
+        // lors d'un clique, on appelle la méthode onListClick de l'interface OnListListener
         public void onClick(View v) {
             mOnListListener.onListClick(getAdapterPosition());
         }
     }
 
     @Override
+    // On relie le ViewHolder à l'Item affiché par l'adapter.
     public void onBindViewHolder(@NonNull ViewHolder holder, final int position) {
         holder.nomListe.setText(mNomListe.get(position));
         }
 
-
-
+    // Déclaration de l'interface
     public interface OnListListener{
         void onListClick(int position);
     }

@@ -52,12 +52,10 @@ public class ProfilListeToDo implements Serializable {
 
     public int rechercherListe(String s)
     {
-        int retour = -1;
+        int retour = -1; //la méthode renvoie -1 dans le cas où la Liste n'a pas été trouvée
         for (int i=0; i < this.mesListeToDo.size() ;i++)
         {
-            Log.i("PMR","on compare " + this.mesListeToDo.get(i).getTitreListeToDo() + "et " + s);
             if (this.mesListeToDo.get(i).getTitreListeToDo().equals(s)){
-                Log.i("PMR","on a trouvé");
                 retour=i;
                 i=this.mesListeToDo.size();
             }

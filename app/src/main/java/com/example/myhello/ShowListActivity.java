@@ -37,7 +37,12 @@ public class ShowListActivity extends AppCompatActivity{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_show_list);
+
+        // Cette condition permet d'éviter que l'application crashe
+        // si l'activité précédente n'a rien renvoyé.
         if (getIntent().hasExtra("liste")){
+
+            // Récupération du nom de la liste à afficher.
             nomListe = getIntent().getStringExtra("liste");
             Log.i("PMR",nomListe);
         }
@@ -45,16 +50,20 @@ public class ShowListActivity extends AppCompatActivity{
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
         String filename = settings.getString("pseudo","");
 
+        // On reconstruit le profil à partir de la lecture du fichier.
         ProfilListeToDo profil = lectureFromJson(filename);
 
         List<ListeToDo> Liste = profil.getMesListeToDo();
 
+        // Construction de la liste à envoyer au RecyclerView
         if(profil.rechercherListe(nomListe)!=-1) {
             List<ItemToDo> ItemToDo = Liste.get(profil.rechercherListe(nomListe)).getLesItems();
             for (int k = 0; k < ItemToDo.size(); k++) {
                 mNomItem.add(ItemToDo.get(k).getDescription());
             }
         }
+
+        // On réutilise la même méthode que dans ChoixListActivity
         RecyclerView recyclerView = findViewById(R.id.recycler_view);
         RecyclerViewAdapter2 adapter = new RecyclerViewAdapter2(mNomItem,profil,this,nomListe);
         recyclerView.setAdapter(adapter);
@@ -62,7 +71,6 @@ public class ShowListActivity extends AppCompatActivity{
 
         final FloatingActionButton floatingActionButton = findViewById(R.id.fab);
         final ProfilListeToDo finalProfil = profil;
-
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

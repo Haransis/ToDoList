@@ -21,6 +21,9 @@ import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+// La construction de ce 2e Adapter est quasiment identique au premier. Sauf qu'une partie du traitement se fait dans celui-ci.
+// En effet, je n'ai pas réussi à relier la valeur que prenait la checkBox avec l'activité.
+// Je me suis donc contenté de le faire lorsque l'on appelle OnBindViewHolder.
 public class RecyclerViewAdapter2 extends RecyclerView.Adapter<RecyclerViewAdapter2.ViewHolder> {
     private static final String TAG = "RecyclerViewAdapter2";
     private ArrayList<String> mNomItem;
@@ -68,30 +71,43 @@ public class RecyclerViewAdapter2 extends RecyclerView.Adapter<RecyclerViewAdapt
         }
     }
 
+    // Une partie du traitement se fait ici.
     @Override
     public void onBindViewHolder(@NonNull RecyclerViewAdapter2.ViewHolder holder, final int position) {
         holder.nomListe.setText(mNomItem.get(position));
+
+        // On est donc obligé de récupérer la liste et l'item cliqué ici.
         List<ListeToDo> ListeListe = mProfil.getMesListeToDo();
         ListeToDo Liste = ListeListe.get(mProfil.rechercherListe(mNomListe));
         List<ItemToDo> ListeItem = Liste.getLesItems();
         final ItemToDo item = ListeItem.get(Liste.rechercherItem(mNomItem.get(position)));
 
+        // Permet d'initialiser les checkBox pour qu'elles correspondent
+        // à ce que l'utilisateur a fait auparavant.
+        // Normalement, cette étape se ferait dans le onStart() de ShowListActivity
+        // mais je n'ai pas réussi à relier la valeur que prenait la checkBox avec l'Activité
         if (item.getFait()){
             holder.checkBox.setChecked(true);
         }
         else{
             holder.checkBox.setChecked(false);
         }
+
+        // On déclenche un événement lorsque la checkBox est cochée
         holder.checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 List<ListeToDo> ListeListe = mProfil.getMesListeToDo();
                 ListeToDo Liste = ListeListe.get(mProfil.rechercherListe(mNomListe));
+                // Si l'item vient d'être coché
                 if (buttonView.isChecked()){
                     Log.i("PMR","Checked");
+                    // On le valide
                     Liste.validerItem(mNomItem.get(position));
                     sauveProfilToJsonFile(mProfil);}
                 else{
+                    Liste.uncheckItem(mNomItem.get(position));
+                    sauveProfilToJsonFile(mProfil);
                     Log.i("PMR","UnChecked");
                 }
             }

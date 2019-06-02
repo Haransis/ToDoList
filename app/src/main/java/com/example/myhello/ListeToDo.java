@@ -46,6 +46,19 @@ public class ListeToDo implements Serializable {
     {
         this.lesItems.add(unItem);
     }
+
+    public Boolean uncheckItem(String s)
+    {
+        int indice = -1;
+
+        if ((indice = rechercherItem(s)) >=0)
+        {
+            this.lesItems.get(indice).setFait(Boolean.FALSE);
+            return Boolean.TRUE;
+        }
+        return Boolean.FALSE;
+    }
+
     public Boolean validerItem(String s)
     {
         int indice = -1;
@@ -78,12 +91,5 @@ public class ListeToDo implements Serializable {
         String retour;
         retour = "Liste : " + this.getTitreListeToDo()+ "Items : " + this.getLesItems().toString();
         return retour;
-    }
-
-    public boolean isDone(){
-        for(int i=0;i<lesItems.size();i++){
-            if (!lesItems.get(i).getFait()){return false;}
-        }
-        return true;
     }
 }
