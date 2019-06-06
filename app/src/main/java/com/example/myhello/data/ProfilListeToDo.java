@@ -1,8 +1,4 @@
-package com.example.myhello;
-
-import android.util.Log;
-
-import com.example.myhello.ListeToDo;
+package com.example.myhello.data;
 
 import java.io.Serializable;
 import java.util.ArrayList;

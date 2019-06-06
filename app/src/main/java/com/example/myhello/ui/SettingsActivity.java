@@ -1,7 +1,9 @@
-package com.example.myhello;
+package com.example.myhello.ui;
 
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
+
+import com.example.myhello.R;
 
 public class SettingsActivity extends PreferenceActivity {
 
@@ -11,5 +13,6 @@ public class SettingsActivity extends PreferenceActivity {
 
         //noinspection deprecation
         addPreferencesFromResource(R.xml.preference);
+
     }
 }

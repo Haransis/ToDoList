@@ -1,8 +1,7 @@
-package com.example.myhello;
+package com.example.myhello.ui;
 
 import android.content.Context;
 import android.util.Log;
-import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +13,10 @@ import androidx.annotation.NonNull;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.myhello.data.ItemToDo;
+import com.example.myhello.data.ListeToDo;
+import com.example.myhello.data.ProfilListeToDo;
+import com.example.myhello.R;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 

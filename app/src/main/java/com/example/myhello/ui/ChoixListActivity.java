@@ -1,4 +1,4 @@
-package com.example.myhello;
+package com.example.myhello.ui;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -16,6 +16,9 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.example.myhello.data.ListeToDo;
+import com.example.myhello.data.ProfilListeToDo;
+import com.example.myhello.R;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;

@@ -1,4 +1,4 @@
-package com.example.myhello;
+package com.example.myhello.ui;
 
 import android.content.Context;
 import android.content.Intent;
@@ -14,6 +14,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.example.myhello.data.ProfilListeToDo;
+import com.example.myhello.R;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -42,7 +44,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // On relie les éléments du layout activity_main à l'activité :
+        // On relie les éléments du layout activity_main à l'activité :
 
 
         Button btnOK = findViewById(R.id.btnOK); // Un bouton qui permet de valider le choix
@@ -60,6 +62,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
 
         edtPseudo.setText(settings.getString("pseudo",""));
+
+
     }
 
     // Généralement, on préférera instancier localement la méthode onClick.
@@ -68,8 +72,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         Intent myIntent = null;
         switch (v.getId()) {
-            case R.id.btnOK : // si le clique est sur le bouton :
+            case R.id.btnOK : // si le clique est sur le bouton :
                 String pseudo = edtPseudo.getText().toString();
+                Log.i("PMR",pseudo);
                 File file = new File(getApplicationContext().getFilesDir(),pseudo);
 
                 // On vérifie si le fichier correspondant à ce qu'a rentré l'utilisateur existe
@@ -98,7 +103,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     SharedPreferences.Editor editor = settings.edit();
                     editor.clear();
                     editor.putString("pseudo", pseudo);
-
+                    editor.apply();
                     myIntent = new Intent(this, ChoixListActivity.class);
                     startActivity(myIntent);
                     break;
