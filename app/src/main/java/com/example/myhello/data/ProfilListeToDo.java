@@ -1,11 +1,17 @@
 package com.example.myhello.data;
 
+import com.google.gson.annotations.SerializedName;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ProfilListeToDo implements Serializable {
+
+    @SerializedName("lists")
     private List<ListeToDo> mesListeToDo;
+
+    @SerializedName("pseudo")
     private String login;
 
     public ProfilListeToDo(List<ListeToDo> mesListeToDo, String login) {
@@ -36,6 +42,11 @@ public class ProfilListeToDo implements Serializable {
 
     public String getLogin() {
         return login;
+    }
+
+    public boolean isEmpty(){
+        if(mesListeToDo.isEmpty()){return true;}
+        else{return false;}
     }
 
     public void setLogin(String login) {

@@ -10,17 +10,20 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.myhello.R;
+import com.example.myhello.data.ListeToDo;
+import com.example.myhello.data.ProfilListeToDo;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class RecyclerViewAdapter1 extends RecyclerView.Adapter<RecyclerViewAdapter1.ViewHolder>{
     private static final String TAG = "RecyclerViewAdapter1";
-    private ArrayList<String> mNomListe;
+    private List<ListeToDo> mNomListe;
     private OnListListener mOnListListener;
 
 
     // Constructeur de l'adapter du recyclerview
-    public RecyclerViewAdapter1(ArrayList<String> NomListe, OnListListener onListListener){
+    public RecyclerViewAdapter1(List<ListeToDo> NomListe, OnListListener onListListener){
         this.mNomListe = NomListe;
         this.mOnListListener = onListListener;
     }
@@ -38,6 +41,11 @@ public class RecyclerViewAdapter1 extends RecyclerView.Adapter<RecyclerViewAdapt
     @Override
     public int getItemCount() {
         return mNomListe.size();
+    }
+
+    public void show(List<ListeToDo> mesListesToDo){
+        mNomListe = mesListesToDo;
+        notifyDataSetChanged();
     }
 
     class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
@@ -67,7 +75,7 @@ public class RecyclerViewAdapter1 extends RecyclerView.Adapter<RecyclerViewAdapt
     @Override
     // On relie le ViewHolder à l'Item affiché par l'adapter.
     public void onBindViewHolder(@NonNull ViewHolder holder, final int position) {
-        holder.nomListe.setText(mNomListe.get(position));
+        holder.nomListe.setText(mNomListe.get(position).getTitreListeToDo());
         }
 
     // Déclaration de l'interface

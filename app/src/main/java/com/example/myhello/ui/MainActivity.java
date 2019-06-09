@@ -14,6 +14,9 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.example.myhello.data.ApiInterface;
+import com.example.myhello.data.ListeToDo;
+import com.example.myhello.data.ListeToDoServiceFactory;
 import com.example.myhello.data.ProfilListeToDo;
 import com.example.myhello.R;
 import com.google.gson.Gson;
@@ -21,6 +24,10 @@ import com.google.gson.GsonBuilder;
 
 import java.io.File;
 import java.io.FileOutputStream;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 // L'activité implémente l'interface 'onClickListener'
 // Une 'interface' est un "contrat"
@@ -62,7 +69,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
 
         edtPseudo.setText(settings.getString("pseudo",""));
-
 
     }
 
@@ -115,6 +121,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         }
     }
+
 
     // permet la création de la barre de menu à partir du xml du menu
     @Override

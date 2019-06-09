@@ -15,8 +15,11 @@ import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.example.myhello.data.ApiInterface;
 import com.example.myhello.data.ListeToDo;
+import com.example.myhello.data.ListeToDoServiceFactory;
 import com.example.myhello.data.ProfilListeToDo;
 import com.example.myhello.R;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -30,9 +33,15 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 public class ChoixListActivity extends AppCompatActivity implements RecyclerViewAdapter1.OnListListener {
 
+    private RecyclerViewAdapter1 adapter;
     private ArrayList<String> mNomListe=new ArrayList<>();
+    private Call<ProfilListeToDo> call;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,13 +63,11 @@ public class ChoixListActivity extends AppCompatActivity implements RecyclerView
 
         // Construction de la Liste d'ItemToDo à envoyer au RecyclerViewAdapter1
         List<ListeToDo> ListeDesToDo = profil.getMesListeToDo();
-        for (int k=0; k<ListeDesToDo.size();k++)
-            mNomListe.add(ListeDesToDo.get(k).getTitreListeToDo());
 
         // Utilisation du RecyclerView
         RecyclerView recyclerView = findViewById(R.id.recycler_view);
         // Création de l'adapter qui va organiser les ItemHolders
-        RecyclerViewAdapter1 adapter = new RecyclerViewAdapter1(mNomListe,this);
+        adapter = new RecyclerViewAdapter1(ListeDesToDo,this);
         recyclerView.setAdapter(adapter);
         // On implémente un LayoutManager basique au RecyclerView
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -75,6 +82,9 @@ public class ChoixListActivity extends AppCompatActivity implements RecyclerView
                 CreerAlertDialog(finalProfil);
             }
         });
+
+        //On fait appel à la méthode d'appel à la requête
+        sync();
     }
 
     // La méthode CreerAlertDialog crée une fenêtre où l'utisateur peut
@@ -135,6 +145,32 @@ public class ChoixListActivity extends AppCompatActivity implements RecyclerView
         }
     }
 
+    private void sync() {
+
+        String hash = "44692ee5175c131da83acad6f80edb12";
+        ApiInterface Interface = ListeToDoServiceFactory.createService(ApiInterface.class);
+        call = Interface.getLists(hash);
+        call.enqueue(new Callback<ProfilListeToDo>() {
+            @Override
+            public void onResponse(Call<ProfilListeToDo> call, Response<ProfilListeToDo> response) {
+
+                if(response.isSuccessful()){
+                    ProfilListeToDo profilRecu = response.body();
+                    if (profilRecu.isEmpty()){Toast.makeText(ChoixListActivity.this,"Liste vide",Toast.LENGTH_LONG).show();}
+                    else {adapter.show(profilRecu.getMesListeToDo());}
+                }else {
+                    Log.d("TAG", "onResponse: "+response.code());
+                    Toast.makeText(ChoixListActivity.this,"Error code : "+response.code(),Toast.LENGTH_LONG).show();
+                }
+            }
+
+            @Override public void onFailure(Call<ProfilListeToDo> call, Throwable t) {
+                Toast.makeText(ChoixListActivity.this,"Error code : ",Toast.LENGTH_LONG).show();
+                Log.d("TAG", "onFailure() called with: call = [" + call + "], t = [" + t + "]");
+            }
+        });
+
+    }
     // Instanciation de la méthode de l'interface onListListener.
     // Elle est appelée lors d'un clique sur un élément du RecyclerView.
     public void onListClick(int position) {

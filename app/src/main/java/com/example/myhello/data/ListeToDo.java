@@ -1,11 +1,16 @@
 package com.example.myhello.data;
 
+import com.google.gson.annotations.SerializedName;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ListeToDo implements Serializable {
+    @SerializedName("label")
     private String titreListeToDo;
+
+    @SerializedName("items")
     private List<ItemToDo> lesItems;
 
     public ListeToDo() {

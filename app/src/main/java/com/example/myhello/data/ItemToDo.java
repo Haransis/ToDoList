@@ -1,9 +1,15 @@
 package com.example.myhello.data;
 
+import com.google.gson.annotations.SerializedName;
+
 import java.io.Serializable;
 
 public class ItemToDo implements Serializable {
+
+    @SerializedName("label")
     private String description;
+
+    @SerializedName("checked")
     private Boolean fait;
 
     public ItemToDo(String description, Boolean fait) {
