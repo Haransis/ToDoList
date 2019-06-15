@@ -13,14 +13,17 @@ public class ListeToDo implements Serializable {
     @SerializedName("items")
     private List<ItemToDo> lesItems;
 
+    @SerializedName("id")
+    private String mId;
+
     public ListeToDo() {
         lesItems = new ArrayList<ItemToDo>();
     }
 
-    public ListeToDo(String titreListeToDo, List<ItemToDo> lesItems) {
+    public ListeToDo(String titreListeToDo, List<ItemToDo> lesItems, String id) {
         this.titreListeToDo = titreListeToDo;
-        lesItems = new ArrayList<ItemToDo>();
         this.lesItems = lesItems;
+        this.mId = id ;
     }
 
     public ListeToDo(String titreListeToDo) {
@@ -31,6 +34,8 @@ public class ListeToDo implements Serializable {
     public String getTitreListeToDo() {
         return titreListeToDo;
     }
+
+    public String getId(){return mId; }
 
     public void setTitreListeToDo(String titreListeToDo) {
         this.titreListeToDo = titreListeToDo;

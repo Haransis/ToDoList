@@ -168,7 +168,7 @@ public class ChoixListActivity extends AppCompatActivity implements RecyclerView
         // On envoie le nom de la liste sur laquelle le clique a été effectué.
         Bundle data = new Bundle();
         intent.putExtras(data);
-        intent.putExtra("liste",ListeDesToDo.get(position).getTitreListeToDo());
+        intent.putExtra("liste",ListeDesToDo.get(position).getId());
 
         this.startActivity(intent);
     }
