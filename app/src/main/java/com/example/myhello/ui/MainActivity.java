@@ -14,9 +14,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.example.myhello.data.ApiInterface;
-import com.example.myhello.data.ListeToDo;
-import com.example.myhello.data.ListeToDoServiceFactory;
 import com.example.myhello.data.ProfilListeToDo;
 import com.example.myhello.R;
 import com.google.gson.Gson;

@@ -14,9 +14,12 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.Toast;
 
+import com.example.myhello.data.ApiInterface;
 import com.example.myhello.data.ItemToDo;
 import com.example.myhello.data.ListeToDo;
+import com.example.myhello.data.ListeToDoServiceFactory;
 import com.example.myhello.data.ProfilListeToDo;
 import com.example.myhello.R;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -30,11 +33,17 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 public class ShowListActivity extends AppCompatActivity{
 
     private ArrayList<String> mNomItem=new ArrayList<>();
     private String nomListe;
     private ProfilListeToDo profil;
+    private RecyclerViewAdapter2 adapter;
+    private Call<ProfilListeToDo> call;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,7 +77,7 @@ public class ShowListActivity extends AppCompatActivity{
 
         // On réutilise la même méthode que dans ChoixListActivity
         RecyclerView recyclerView = findViewById(R.id.recycler_view);
-        RecyclerViewAdapter2 adapter = new RecyclerViewAdapter2(mNomItem,profil,this,nomListe);
+        adapter = new RecyclerViewAdapter2(mNomItem,profil,this,nomListe);
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
@@ -151,6 +160,34 @@ public class ShowListActivity extends AppCompatActivity{
             e.printStackTrace();
         }
         return profil;
+    }
+
+    private void sync() {
+
+        String hash = "44692ee5175c131da83acad6f80edb12";
+        ApiInterface Interface = ListeToDoServiceFactory.createService(ApiInterface.class);
+        call = Interface.getLists(hash);
+        call.enqueue(new Callback<ProfilListeToDo>() {
+            @Override
+            public void onResponse(Call<ProfilListeToDo> call, Response<ProfilListeToDo> response) {
+
+                if(response.isSuccessful()){
+                    ProfilListeToDo profilRecu = response.body();
+                    if (profilRecu.isEmpty()){
+                        Toast.makeText(ShowListActivity.this,"Liste vide",Toast.LENGTH_LONG).show();}
+                    else {adapter.show(profilRecu.getMesListeToDo());}
+                }else {
+                    Log.d("TAG", "onResponse: "+response.code());
+                    Toast.makeText(ShowListActivity.this,"Error code : "+response.code(),Toast.LENGTH_LONG).show();
+                }
+            }
+
+            @Override public void onFailure(Call<ProfilListeToDo> call, Throwable t) {
+                Toast.makeText(ShowListActivity.this,"Error code : ",Toast.LENGTH_LONG).show();
+                Log.d("TAG", "onFailure() called with: call = [" + call + "], t = [" + t + "]");
+            }
+        });
+
     }
 
 }

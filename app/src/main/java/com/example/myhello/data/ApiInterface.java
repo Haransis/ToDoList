@@ -5,12 +5,16 @@ import java.util.List;
 import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.Header;
-import retrofit2.http.Headers;
+import retrofit2.http.POST;
+import retrofit2.http.Query;
 
 public interface ApiInterface {
 
     // Lister les listes
     @GET("lists")
-    public Call<ProfilListeToDo> getLists(@Header("hash") String hash );
+    public Call<ProfilListeToDo> getLists(@Header("hash") String hash);
+
+    @POST("lists")
+    public Call<ProfilListeToDo> addLists(@Header("hash") String hash, @Query("label") String label);
 
 }

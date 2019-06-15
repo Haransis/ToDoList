@@ -39,8 +39,9 @@ import retrofit2.Response;
 
 public class ChoixListActivity extends AppCompatActivity implements RecyclerViewAdapter1.OnListListener {
 
+    private static final String TAG = "ChoixListActivity";
     private RecyclerViewAdapter1 adapter;
-    private ArrayList<String> mNomListe=new ArrayList<>();
+    private List<ListeToDo> ListeDesToDo;
     private Call<ProfilListeToDo> call;
 
     @Override
@@ -48,21 +49,12 @@ public class ChoixListActivity extends AppCompatActivity implements RecyclerView
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_liste_to_dos);
 
-        // Récupération du profil utilisé dans les préférences.
-        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
-        String filename = settings.getString("pseudo","");
+        // TODO : Récupération du hash stocké dans les préférences
 
-        // Recréation du profil à partir de la lecture du .json
-        ProfilListeToDo profil = lectureFromJson(filename);
 
-        // Affichage du profil en cours d'utilisation
-        String s = "Listes des ToDo de ";
-        s += profil.getLogin() + " :";
-        TextView tv = findViewById(R.id.tvInfo);
-        tv.setText(s);
-
-        // Construction de la Liste d'ItemToDo à envoyer au RecyclerViewAdapter1
-        List<ListeToDo> ListeDesToDo = profil.getMesListeToDo();
+        // Construction d'une liste de listeToDo vide à envoyer au RecyclerViewAdapter1
+        ProfilListeToDo profilVide = new ProfilListeToDo("random");
+        ListeDesToDo = profilVide.getMesListeToDo();
 
         // Utilisation du RecyclerView
         RecyclerView recyclerView = findViewById(R.id.recycler_view);
@@ -75,11 +67,10 @@ public class ChoixListActivity extends AppCompatActivity implements RecyclerView
         // On crée le bouton flottant qui permet d'ajouter des listes
         final FloatingActionButton floatingActionButton = findViewById(R.id.fab);
         // Les variables ont besoin d'être déclarées en final car on les utilise dans un cast local.
-        final ProfilListeToDo finalProfil = profil;
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                CreerAlertDialog(finalProfil);
+                CreerAlertDialog();
             }
         });
 
@@ -89,7 +80,7 @@ public class ChoixListActivity extends AppCompatActivity implements RecyclerView
 
     // La méthode CreerAlertDialog crée une fenêtre où l'utisateur peut
     // rentrer le nom de la nouvelle liste.
-    private void CreerAlertDialog(final ProfilListeToDo finalProfil) {
+    private void CreerAlertDialog() {
 
         final EditText editText = new EditText(this);
         // Un AlertDialog fonctionne comme une «mini-activité».
@@ -101,14 +92,13 @@ public class ChoixListActivity extends AppCompatActivity implements RecyclerView
         alertDialogBuilder.setPositiveButton("Valider",new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface arg0, int arg1) {
-                ListeToDo newListe = new ListeToDo();
-                newListe.setTitreListeToDo(editText.getText().toString());
 
-                // On ajoute une Liste dont le nom a été rentré au profil
-                finalProfil.ajouteListe(newListe);
-                sauveProfilToJsonFile(finalProfil);
+                // Requête POST ici
+                add(editText.getText().toString());
+
 
                 // On relance l'activité pour la rafraîchir
+                // TODO : notifyDataSetChanged
                 Intent intent = getIntent();
                 finish();
                 startActivity(intent);
@@ -125,25 +115,22 @@ public class ChoixListActivity extends AppCompatActivity implements RecyclerView
         alertDialog.show();
     }
 
-    public void sauveProfilToJsonFile(ProfilListeToDo p)
-    {
-        final GsonBuilder builder = new GsonBuilder();
-        final Gson gson = builder.create();
-        String filename = p.getLogin();
-        String fileContents = gson.toJson(p);
-        FileOutputStream outputStream;
+    private void add(String nomNewListe) {
+        String hash = "44692ee5175c131da83acad6f80edb12";
+        ApiInterface Interface = ListeToDoServiceFactory.createService(ApiInterface.class);
+        call = Interface.addLists(hash,nomNewListe);
+        call.enqueue(new Callback<ProfilListeToDo>() {
+            @Override
+            public void onResponse(Call<ProfilListeToDo> call, Response<ProfilListeToDo> response) {
+                Log.d(TAG, "onResponse: "+response.code());
+            }
 
-        try {
-            outputStream = openFileOutput(filename, Context.MODE_PRIVATE);
-            outputStream.write(fileContents.getBytes());
-            outputStream.close();
-            Log.i("PMR","Sauvegarde du fichier"+p.getLogin());
-            Log.i("PMR",fileContents);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+            @Override public void onFailure(Call<ProfilListeToDo> call, Throwable t) {
+                Log.d(TAG, "onFailure() called with: call = [" + call + "], t = [" + t + "]");
+            }
+        });
     }
+
 
     private void sync() {
 
@@ -153,20 +140,21 @@ public class ChoixListActivity extends AppCompatActivity implements RecyclerView
         call.enqueue(new Callback<ProfilListeToDo>() {
             @Override
             public void onResponse(Call<ProfilListeToDo> call, Response<ProfilListeToDo> response) {
-
                 if(response.isSuccessful()){
                     ProfilListeToDo profilRecu = response.body();
                     if (profilRecu.isEmpty()){Toast.makeText(ChoixListActivity.this,"Liste vide",Toast.LENGTH_LONG).show();}
-                    else {adapter.show(profilRecu.getMesListeToDo());}
+                    else {
+                        ListeDesToDo = profilRecu.getMesListeToDo();
+                        adapter.show(ListeDesToDo);}
                 }else {
-                    Log.d("TAG", "onResponse: "+response.code());
+                    Log.d(TAG, "onResponse: "+response.code());
                     Toast.makeText(ChoixListActivity.this,"Error code : "+response.code(),Toast.LENGTH_LONG).show();
                 }
             }
 
             @Override public void onFailure(Call<ProfilListeToDo> call, Throwable t) {
                 Toast.makeText(ChoixListActivity.this,"Error code : ",Toast.LENGTH_LONG).show();
-                Log.d("TAG", "onFailure() called with: call = [" + call + "], t = [" + t + "]");
+                Log.d(TAG, "onFailure() called with: call = [" + call + "], t = [" + t + "]");
             }
         });
 
@@ -180,7 +168,7 @@ public class ChoixListActivity extends AppCompatActivity implements RecyclerView
         // On envoie le nom de la liste sur laquelle le clique a été effectué.
         Bundle data = new Bundle();
         intent.putExtras(data);
-        intent.putExtra("liste",mNomListe.get(position));
+        intent.putExtra("liste",ListeDesToDo.get(position).getTitreListeToDo());
 
         this.startActivity(intent);
     }

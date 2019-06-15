@@ -54,7 +54,12 @@ public class RecyclerViewAdapter2 extends RecyclerView.Adapter<RecyclerViewAdapt
         return mNomItem.size();
     }
 
-    class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
+    public void show(List<ListeToDo> mesListesToDo){
+        //mNomListe = mesListesToDo;
+        notifyDataSetChanged();
+    }
+
+    class ViewHolder extends RecyclerView.ViewHolder{
 
         TextView nomListe;
         CoordinatorLayout parentLayout;
@@ -65,13 +70,8 @@ public class RecyclerViewAdapter2 extends RecyclerView.Adapter<RecyclerViewAdapt
             checkBox =itemView.findViewById(R.id.checkbox);
             nomListe=itemView.findViewById(R.id.item);
             parentLayout=itemView.findViewById(R.id.parent_layout);
-            itemView.setOnClickListener(this);
         }
 
-        @Override
-        public void onClick(View v) {
-
-        }
     }
 
     // Une partie du traitement se fait ici.
