@@ -12,6 +12,9 @@ public class ItemToDo implements Serializable {
     @SerializedName("checked")
     private int fait;
 
+    @SerializedName("id")
+    private int id;
+
     public ItemToDo(String description, int fait) {
         this.description = description;
         this.fait = fait;
@@ -26,12 +29,14 @@ public class ItemToDo implements Serializable {
         return description;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
+    public int getId() {return id;}
 
     public Boolean getFait() {
         return fait == 1;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public void setFait(int fait) {

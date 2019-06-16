@@ -27,13 +27,13 @@ public interface ApiInterface {
     // Cocher/décocher un item
     @PUT("lists/{idListe}/items/{idItem}")
     public Call<ListeToDo> cocherItems(@Header("hash") String hash,
-                                       @Path("idListe") String idListe, @Path("idItem") String idItem,
+                                       @Path("idListe") int idListe, @Path("idItem") int idItem,
                                        @Query("check") String check);
 
     // Ajouter un item
     @POST("lists/{idListe}/items")
     public Call<ListeToDo> addItem(@Header("hash") String hash,
-                                         @Path("idListe") String idListe,
+                                         @Path("idListe") int idListe,
                                          @Query("label") String label, @Query("url") String url);
 
 }

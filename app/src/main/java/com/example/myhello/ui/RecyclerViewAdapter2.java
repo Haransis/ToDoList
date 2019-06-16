@@ -12,10 +12,17 @@ import androidx.annotation.NonNull;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.myhello.data.ApiInterface;
 import com.example.myhello.data.ItemToDo;
 import com.example.myhello.R;
+import com.example.myhello.data.ListeToDo;
+import com.example.myhello.data.ListeToDoServiceFactory;
 
 import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 // La construction de ce 2e Adapter est quasiment identique au premier. Sauf qu'une partie du traitement se fait dans celui-ci.
 // En effet, je n'ai pas réussi à relier la valeur que prenait la checkBox avec l'activité.
@@ -23,9 +30,11 @@ import java.util.List;
 public class RecyclerViewAdapter2 extends RecyclerView.Adapter<RecyclerViewAdapter2.ViewHolder> {
     private static final String TAG = "RecyclerViewAdapter2";
     private List<ItemToDo> mLesItems;
+    private int mIdListe;
 
-    public RecyclerViewAdapter2(List<ItemToDo> LesItems){
+    public RecyclerViewAdapter2(List<ItemToDo> LesItems, int idListe){
         this.mLesItems = LesItems;
+        this.mIdListe = idListe;
     }
 
     @NonNull
@@ -81,23 +90,55 @@ public class RecyclerViewAdapter2 extends RecyclerView.Adapter<RecyclerViewAdapt
             holder.checkBox.setChecked(false);
         }
 
+        /*// On récupère la liste avec les identifiants
+        String hash = "44692ee5175c131da83acad6f80edb12";
+        ApiInterface Interface = ListeToDoServiceFactory.createService(ApiInterface.class);
+        Call<ListeToDo> call;
+        call = Interface.getItems(hash, mIdListe);
+        call.enqueue(new Callback<ListeToDo>() {
+            @Override
+            public void onResponse(Call<ListeToDo> call, Response<ListeToDo> response) {
+                if(response.isSuccessful()){
+                    Log.d(TAG, "onResponse: "+response.code());
+                    listeRecue = response.body();
+                }else {
+                    Log.d("TAG", "onResponse: "+response.code());
+                }
+            }
+
+            @Override public void onFailure(Call<ListeToDo> call, Throwable t) {
+                Log.d("TAG", "onFailure() called with: call = [" + call + "], t = [" + t + "]");
+            }
+        });*/
+
         // On déclenche un événement lorsque la checkBox est cochée
         holder.checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                /*// On récupère la liste avec les identifiants
-                List<ListeToDo> ListeListe = mProfil.getMesListeToDo();
-                ListeToDo Liste = ListeListe.get(mProfil.rechercherListe(mNomListe));
+
+                String hash = "44692ee5175c131da83acad6f80edb12";
+                ApiInterface Interface = ListeToDoServiceFactory.createService(ApiInterface.class);
+                Call<ListeToDo> call;
+                String check;
+                int idItem = item.getId();
                 // Si l'item vient d'être coché
                 if (buttonView.isChecked()){
                     // On le valide
-                    Liste.validerItem(mNomItem.get(position));
-                    mLesItems.get(position).getDescription();
+                    check = "1";
                 }
                 else{
-                    Liste.uncheckItem(mNomItem.get(position));
-                    Log.i("PMR","UnChecked");
-                }*/
+                    check = "0";
+                }
+                call = Interface.cocherItems(hash,mIdListe,idItem,check);
+                call.enqueue(new Callback<ListeToDo>() {
+                    @Override
+                    public void onResponse(Call<ListeToDo> call, Response<ListeToDo> response) {
+                        Log.d(TAG, "onResponse: "+response.code());
+                    }
+                    @Override public void onFailure(Call<ListeToDo> call, Throwable t) {
+                        Log.d("TAG", "onFailure() called with: call = [" + call + "], t = [" + t + "]");
+                    }
+                });
             }
         });
     }

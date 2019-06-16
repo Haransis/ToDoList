@@ -58,7 +58,7 @@ public class ShowListActivity extends AppCompatActivity{
 
         // On réutilise la même méthode que dans ChoixListActivity
         RecyclerView recyclerView = findViewById(R.id.recycler_view);
-        adapter = new RecyclerViewAdapter2(listeItemVide);
+        adapter = new RecyclerViewAdapter2(listeItemVide,Integer.parseInt(idListe));
 
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -100,7 +100,7 @@ public class ShowListActivity extends AppCompatActivity{
     private void add(String nomNewItem) {
         String hash = "44692ee5175c131da83acad6f80edb12";
         ApiInterface Interface = ListeToDoServiceFactory.createService(ApiInterface.class);
-        call = Interface.addItem(hash, idListe, nomNewItem, urlTest);
+        call = Interface.addItem(hash, Integer.parseInt(idListe), nomNewItem, urlTest);
         call.enqueue(new Callback<ListeToDo>() {
             @Override
             public void onResponse(Call<ListeToDo> call, Response<ListeToDo> response) {
