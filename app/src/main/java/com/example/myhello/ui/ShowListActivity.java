@@ -49,8 +49,7 @@ public class ShowListActivity extends AppCompatActivity{
         }
 
         Log.d(TAG, "onCreate: "+idListe);
-        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
-        String filename = settings.getString("pseudo","");
+
 
         // Construction d'une liste d'ItemToDo vide à envoyer au RecyclerViewAdapter1
         ListeDesToDo = new ListeToDo();
@@ -58,7 +57,7 @@ public class ShowListActivity extends AppCompatActivity{
 
         // On réutilise la même méthode que dans ChoixListActivity
         RecyclerView recyclerView = findViewById(R.id.recycler_view);
-        adapter = new RecyclerViewAdapter2(listeItemVide,Integer.parseInt(idListe));
+        adapter = new RecyclerViewAdapter2(getApplicationContext(),listeItemVide,Integer.parseInt(idListe));
 
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -98,7 +97,11 @@ public class ShowListActivity extends AppCompatActivity{
     }
 
     private void add(String nomNewItem) {
-        String hash = "44692ee5175c131da83acad6f80edb12";
+        // On récupère le hash à utiliser.
+        final SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        String hash = settings.getString("hash","44692ee5175c131da83acad6f80edb12");
+
+
         ApiInterface Interface = ListeToDoServiceFactory.createService(ApiInterface.class);
         call = Interface.addItem(hash, Integer.parseInt(idListe), nomNewItem, urlTest);
         call.enqueue(new Callback<ListeToDo>() {

@@ -12,6 +12,11 @@ import retrofit2.http.Query;
 
 public interface ApiInterface {
 
+    // Demander un nouveau hash
+    @POST("authenticate")
+    public Call<Hash>  getHash(@Header("hash") String hash,
+                               @Query("user") String user, @Query("password") String password);
+
     // Lister les listes
     @GET("lists")
     public Call<ProfilListeToDo> getLists(@Header("hash") String hash);

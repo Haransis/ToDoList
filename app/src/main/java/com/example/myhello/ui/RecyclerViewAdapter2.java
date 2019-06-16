@@ -1,5 +1,8 @@
 package com.example.myhello.ui;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -28,13 +31,16 @@ import retrofit2.Response;
 // En effet, je n'ai pas réussi à relier la valeur que prenait la checkBox avec l'activité.
 // Je me suis donc contenté de le faire lorsque l'on appelle OnBindViewHolder.
 public class RecyclerViewAdapter2 extends RecyclerView.Adapter<RecyclerViewAdapter2.ViewHolder> {
+
     private static final String TAG = "RecyclerViewAdapter2";
     private List<ItemToDo> mLesItems;
     private int mIdListe;
+    private Context mContext;
 
-    public RecyclerViewAdapter2(List<ItemToDo> LesItems, int idListe){
+    public RecyclerViewAdapter2(Context context, List<ItemToDo> LesItems, int idListe){
         this.mLesItems = LesItems;
         this.mIdListe = idListe;
+        this.mContext = context;
     }
 
     @NonNull
@@ -90,33 +96,14 @@ public class RecyclerViewAdapter2 extends RecyclerView.Adapter<RecyclerViewAdapt
             holder.checkBox.setChecked(false);
         }
 
-        /*// On récupère la liste avec les identifiants
-        String hash = "44692ee5175c131da83acad6f80edb12";
-        ApiInterface Interface = ListeToDoServiceFactory.createService(ApiInterface.class);
-        Call<ListeToDo> call;
-        call = Interface.getItems(hash, mIdListe);
-        call.enqueue(new Callback<ListeToDo>() {
-            @Override
-            public void onResponse(Call<ListeToDo> call, Response<ListeToDo> response) {
-                if(response.isSuccessful()){
-                    Log.d(TAG, "onResponse: "+response.code());
-                    listeRecue = response.body();
-                }else {
-                    Log.d("TAG", "onResponse: "+response.code());
-                }
-            }
-
-            @Override public void onFailure(Call<ListeToDo> call, Throwable t) {
-                Log.d("TAG", "onFailure() called with: call = [" + call + "], t = [" + t + "]");
-            }
-        });*/
-
         // On déclenche un événement lorsque la checkBox est cochée
         holder.checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 
-                String hash = "44692ee5175c131da83acad6f80edb12";
+                // On récupère le hash à utiliser.
+                final SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(mContext);
+                String hash = settings.getString("hash","44692ee5175c131da83acad6f80edb12");
                 ApiInterface Interface = ListeToDoServiceFactory.createService(ApiInterface.class);
                 Call<ListeToDo> call;
                 String check;

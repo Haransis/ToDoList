@@ -23,14 +23,7 @@ import com.example.myhello.data.ListeToDoServiceFactory;
 import com.example.myhello.data.ProfilListeToDo;
 import com.example.myhello.R;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import retrofit2.Call;
@@ -132,7 +125,9 @@ public class ChoixListActivity extends AppCompatActivity implements RecyclerView
 
     private void sync() {
 
-        String hash = "44692ee5175c131da83acad6f80edb12";
+        // On récupère le hash à utiliser.
+        final SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        String hash = settings.getString("hash","44692ee5175c131da83acad6f80edb12");
         ApiInterface Interface = ListeToDoServiceFactory.createService(ApiInterface.class);
         call = Interface.getLists(hash);
         call.enqueue(new Callback<ProfilListeToDo>() {

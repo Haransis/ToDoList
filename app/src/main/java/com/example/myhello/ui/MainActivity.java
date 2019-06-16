@@ -1,8 +1,9 @@
 package com.example.myhello.ui;
 
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
@@ -14,31 +15,32 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.example.myhello.data.ProfilListeToDo;
 import com.example.myhello.R;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
-import java.io.File;
-import java.io.FileOutputStream;
+import com.example.myhello.data.ApiInterface;
+import com.example.myhello.data.Hash;
+import com.example.myhello.data.ListeToDoServiceFactory;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+
 // L'activité implémente l'interface 'onClickListener'
 // Une 'interface' est un "contrat"
 // qui définit des fonctions à implémenter
 // Ici, l'interface "onClickListener" demande que la classe
-// qui l'implémente fournisse une méthode onClick
+// qui l'implémente fournisse une méthode onClick.
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+public class MainActivity extends AppCompatActivity{
 
-    public final String CAT="PMR";
+    private static final String TAG = "MainActivity";
     private EditText edtPseudo = null;
+    private EditText edtPassword = null;
+    private Call<Hash> call;
+    private Button btnOK;
 
     private void alerter(String s) {
-        Log.i(CAT,s);
+        Log.i(TAG,s);
         Toast myToast = Toast.makeText(this,s,Toast.LENGTH_SHORT);
         myToast.show();
     }
@@ -51,12 +53,63 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // On relie les éléments du layout activity_main à l'activité :
 
 
-        Button btnOK = findViewById(R.id.btnOK); // Un bouton qui permet de valider le choix
+        btnOK = findViewById(R.id.btnOK); // Un bouton qui permet de valider le choix
         edtPseudo = findViewById(R.id.edtPseudo); // Un editText qui permet de saisir le choix
+        edtPassword = findViewById(R.id.edtPassword); // Un editText qui permet de saisir le mot de passe
+        btnOK.setOnClickListener(new Button.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // On récupère les informations des deux editTexts.
+                String pseudo = edtPseudo.getText().toString();
+                String password = edtPassword.getText().toString();
 
-        // On demande à l'activité de déclencher un évènement lors d'un clique sur le bouton et l'editText.
-        btnOK.setOnClickListener(this);
-        edtPseudo.setOnClickListener(this);
+                // On récupère le hash à utiliser.
+                final SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                String hash = settings.getString("hash","44692ee5175c131da83acad6f80edb12");
+
+                // On les stocke dans les préférences pour qu'elles puissent
+                // réapparaître lors du lancement de l'application.
+                final SharedPreferences.Editor editor = settings.edit();
+                editor.clear();
+                editor.putString("pseudo", pseudo);
+                editor.putString("password", password);
+                editor.apply();
+
+                // On change l'url de la factory
+                ListeToDoServiceFactory.changeUrl(settings.getString("url","http://tomnab.fr/todo-api/"));
+
+                // On demande la création d'un nouveau hash
+                ApiInterface Interface = ListeToDoServiceFactory.createService(ApiInterface.class);
+                call = Interface.getHash(hash,pseudo,password);
+                call.enqueue(new Callback<Hash>() {
+                    @Override
+                    public void onResponse(Call<Hash> call, Response<Hash> response) {
+                        if(response.isSuccessful()){
+                            editor.clear();
+                            editor.putString("hash", String.valueOf(response.body()));
+                            editor.apply();
+                        }
+                        else{
+                            if(response.code()==400) {
+                                Toast.makeText(MainActivity.this, "Pseudo ou mot de passe incorrect", Toast.LENGTH_LONG).show();
+                            }
+                        }
+                    }
+
+                    @Override public void onFailure(Call<Hash> call, Throwable t) {
+                        Toast.makeText(MainActivity.this,"Error code : ",Toast.LENGTH_LONG).show();
+                        Log.d(TAG, "onFailure() called with: call = [" + call + "], t = [" + t + "]");
+                    }
+                });
+
+
+
+                // On lance la nouvelle activité
+                Intent intent = new Intent(getApplicationContext(),ChoixListActivity.class);
+                startActivity(intent);
+            }
+        });
+
     }
 
     // On affiche le dernier pseudo utilisé i.e. celui stocké dans les préférences
@@ -64,58 +117,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onStart() {
         super.onStart();
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
-
-        edtPseudo.setText(settings.getString("pseudo",""));
-
-    }
-
-    // Généralement, on préférera instancier localement la méthode onClick.
-    // Ici, j'ai repris la correction du TP.
-    @Override
-    public void onClick(View v) {
-        Intent myIntent = null;
-        switch (v.getId()) {
-            case R.id.btnOK : // si le clique est sur le bouton :
-                String pseudo = edtPseudo.getText().toString();
-                Log.i("PMR",pseudo);
-                File file = new File(getApplicationContext().getFilesDir(),pseudo);
-
-                // On vérifie si le fichier correspondant à ce qu'a rentré l'utilisateur existe
-                // Si ce n'est pas le cas, on créée le fichier et on change les Préférences.
-                if(!file.exists()) {
-                    Log.i("PMR","le fichier n'existe pas");
-                    ProfilListeToDo login = new ProfilListeToDo(pseudo);
-                    sauveProfilToJsonFile(login);
-                    //Sauvegarde du pseudo
-                    SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
-                    SharedPreferences.Editor editor = settings.edit();
-                    editor.clear();
-                    editor.putString("pseudo", login.getLogin());
-                    editor.apply();
-                    Log.i("PMR",settings.getString("pseudo",""));
-
-                    //Passage à la nouvelle activité
-                    myIntent = new Intent(this, ChoixListActivity.class);
-                    startActivity(myIntent);
-                    break;
-                }
-
-                // Sinon, on se contente de changer les Préférences.
-                else{
-                    SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
-                    SharedPreferences.Editor editor = settings.edit();
-                    editor.clear();
-                    editor.putString("pseudo", pseudo);
-                    editor.apply();
-                    myIntent = new Intent(this, ChoixListActivity.class);
-                    startActivity(myIntent);
-                    break;
-                }
-
-            case R.id.edtPseudo : // si le clique est sur l'editText, on affiche un Toast
-                alerter("Saisir votre pseudo");
-                break;
-
+        edtPseudo.setText(settings.getString("pseudo","alban"));
+        edtPassword.setText(settings.getString("password","alban"));
+        if(!verifReseau()){
+            btnOK.setEnabled(false);
         }
     }
 
@@ -145,34 +150,36 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return super.onOptionsItemSelected(item);
     }
 
-    // La méthode sauveProfilToJsonFile permet de sauvegarder un profil p sous
-    // la forme d'un fichier profil.json
-    public void sauveProfilToJsonFile(ProfilListeToDo p)
+    public boolean verifReseau()
     {
-        // un GsonBuilder permet la création d'une chaîne de caractère
-        final GsonBuilder builder = new GsonBuilder();
-        // le gson est la création du GsonBuilder
-        final Gson gson = builder.create();
+        // On vérifie si le réseau est disponible,
+        // si oui on change le statut du bouton de connexion
+        ConnectivityManager cnMngr = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = cnMngr.getActiveNetworkInfo();
 
-        // le nom du fichier à créer
-        String filename = p.getLogin();
-        // le contenu du fichier
-        String fileContents = gson.toJson(p);
+        String sType = "Aucun réseau détecté";
+        Boolean bStatut = false;
+        if (netInfo != null)
+        {
 
-        // ce qui sortira de l'activité
-        FileOutputStream outputStream;
+            NetworkInfo.State netState = netInfo.getState();
 
-        try {
-            // on dit à l'outputStream d'écrire dans filename
-            // si filename n'existe pas, il est créée
-            outputStream = openFileOutput(filename, Context.MODE_PRIVATE);
-            outputStream.write(fileContents.getBytes());
-            outputStream.close();
-            Log.i("PMR","Sauvegarde du fichier"+p.getLogin());
-            Log.i("PMR",fileContents);
+            if (netState.compareTo(NetworkInfo.State.CONNECTED) == 0)
+            {
+                bStatut = true;
+                int netType= netInfo.getType();
+                switch (netType)
+                {
+                    case ConnectivityManager.TYPE_MOBILE :
+                        sType = "Réseau mobile détecté"; break;
+                    case ConnectivityManager.TYPE_WIFI :
+                        sType = "Réseau wifi détecté"; break;
+                }
 
-        } catch (Exception e) {
-            e.printStackTrace();
+            }
         }
+
+        this.alerter(sType);
+        return bStatut;
     }
 }
