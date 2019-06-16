@@ -37,6 +37,11 @@ public class ListeToDo implements Serializable {
 
     public String getId(){return mId; }
 
+    public Boolean isEmpty(){
+        if(lesItems.isEmpty()){return true;}
+        else{return false;}
+    }
+
     public void setTitreListeToDo(String titreListeToDo) {
         this.titreListeToDo = titreListeToDo;
     }
@@ -59,7 +64,7 @@ public class ListeToDo implements Serializable {
 
         if ((indice = rechercherItem(s)) >=0)
         {
-            this.lesItems.get(indice).setFait(Boolean.FALSE);
+            this.lesItems.get(indice).setFait(0);
             return Boolean.TRUE;
         }
         return Boolean.FALSE;
@@ -71,7 +76,7 @@ public class ListeToDo implements Serializable {
 
         if ((indice = rechercherItem(s)) >=0)
         {
-            this.lesItems.get(indice).setFait(Boolean.TRUE);
+            this.lesItems.get(indice).setFait(1);
             return Boolean.TRUE;
         }
         return Boolean.FALSE;

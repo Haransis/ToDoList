@@ -10,16 +10,16 @@ public class ItemToDo implements Serializable {
     private String description;
 
     @SerializedName("checked")
-    private Boolean fait;
+    private int fait;
 
-    public ItemToDo(String description, Boolean fait) {
+    public ItemToDo(String description, int fait) {
         this.description = description;
         this.fait = fait;
     }
 
     public ItemToDo(String description) {
         this.description = description;
-        this.fait = Boolean.FALSE;
+        this.fait = 0;
     }
 
     public String getDescription() {
@@ -31,17 +31,16 @@ public class ItemToDo implements Serializable {
     }
 
     public Boolean getFait() {
-        return fait;
+        return fait == 1;
     }
 
-    public void setFait(Boolean fait) {
+    public void setFait(int fait) {
         this.fait = fait;
     }
 
     @Override
     public String toString() {
         return ("Item : "+ this.getDescription() + " - Fait : " +this.getFait().toString());
-
     }
 
 }

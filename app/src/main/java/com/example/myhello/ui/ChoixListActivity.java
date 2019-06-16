@@ -95,8 +95,6 @@ public class ChoixListActivity extends AppCompatActivity implements RecyclerView
 
                 // Requête POST ici
                 add(editText.getText().toString());
-
-
                 // On relance l'activité pour la rafraîchir
                 // TODO : notifyDataSetChanged
                 Intent intent = getIntent();
@@ -173,27 +171,4 @@ public class ChoixListActivity extends AppCompatActivity implements RecyclerView
         this.startActivity(intent);
     }
 
-    public ProfilListeToDo lectureFromJson(String fileName){
-        final GsonBuilder builder = new GsonBuilder();
-        final Gson gson = builder.create();
-        FileInputStream inputStream;
-        String sJsonLu="";
-        ProfilListeToDo profil = new ProfilListeToDo();
-
-        try {
-            inputStream = openFileInput(fileName);
-            int content;
-            while ((content = inputStream.read()) != -1) {
-                // convert to char and display it
-                sJsonLu = sJsonLu+(char)content;
-            }
-            inputStream.close();
-            profil = (ProfilListeToDo)gson.fromJson(sJsonLu,ProfilListeToDo.class);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return profil;
-    }
 }

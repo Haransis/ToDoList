@@ -1,6 +1,5 @@
 package com.example.myhello.ui;
 
-import android.content.Context;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,14 +13,8 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.myhello.data.ItemToDo;
-import com.example.myhello.data.ListeToDo;
-import com.example.myhello.data.ProfilListeToDo;
 import com.example.myhello.R;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
-import java.io.FileOutputStream;
-import java.util.ArrayList;
 import java.util.List;
 
 // La construction de ce 2e Adapter est quasiment identique au premier. Sauf qu'une partie du traitement se fait dans celui-ci.
@@ -29,17 +22,10 @@ import java.util.List;
 // Je me suis donc contenté de le faire lorsque l'on appelle OnBindViewHolder.
 public class RecyclerViewAdapter2 extends RecyclerView.Adapter<RecyclerViewAdapter2.ViewHolder> {
     private static final String TAG = "RecyclerViewAdapter2";
-    private ArrayList<String> mNomItem;
-    private ProfilListeToDo mProfil;
-    private Context mContext;
-    private String mNomListe;
+    private List<ItemToDo> mLesItems;
 
-
-    public RecyclerViewAdapter2(ArrayList<String> NomItem,ProfilListeToDo profil, Context context,String NomListe){
-        this.mNomItem = NomItem;
-        this.mProfil = profil;
-        this.mContext = context;
-        this.mNomListe = NomListe;
+    public RecyclerViewAdapter2(List<ItemToDo> LesItems){
+        this.mLesItems = LesItems;
     }
 
     @NonNull
@@ -51,11 +37,11 @@ public class RecyclerViewAdapter2 extends RecyclerView.Adapter<RecyclerViewAdapt
 
     @Override
     public int getItemCount() {
-        return mNomItem.size();
+        return mLesItems.size();
     }
 
-    public void show(List<ListeToDo> mesListesToDo){
-        //mNomListe = mesListesToDo;
+    public void show(List<ItemToDo> mesItemToDo){
+        mLesItems = mesItemToDo;
         notifyDataSetChanged();
     }
 
@@ -77,13 +63,12 @@ public class RecyclerViewAdapter2 extends RecyclerView.Adapter<RecyclerViewAdapt
     // Une partie du traitement se fait ici.
     @Override
     public void onBindViewHolder(@NonNull RecyclerViewAdapter2.ViewHolder holder, final int position) {
-        holder.nomListe.setText(mNomItem.get(position));
 
-        // On est donc obligé de récupérer la liste et l'item cliqué ici.
-        List<ListeToDo> ListeListe = mProfil.getMesListeToDo();
-        ListeToDo Liste = ListeListe.get(mProfil.rechercherListe(mNomListe));
-        List<ItemToDo> ListeItem = Liste.getLesItems();
-        final ItemToDo item = ListeItem.get(Liste.rechercherItem(mNomItem.get(position)));
+        holder.nomListe.setText(mLesItems.get(position).getDescription());
+
+        final ItemToDo item = mLesItems.get(position);
+
+        Log.d(TAG, "onBindViewHolder: " + item.getFait().toString());
 
         // Permet d'initialiser les checkBox pour qu'elles correspondent
         // à ce que l'utilisateur a fait auparavant.
@@ -100,40 +85,21 @@ public class RecyclerViewAdapter2 extends RecyclerView.Adapter<RecyclerViewAdapt
         holder.checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                /*// On récupère la liste avec les identifiants
                 List<ListeToDo> ListeListe = mProfil.getMesListeToDo();
                 ListeToDo Liste = ListeListe.get(mProfil.rechercherListe(mNomListe));
                 // Si l'item vient d'être coché
                 if (buttonView.isChecked()){
-                    Log.i("PMR","Checked");
                     // On le valide
                     Liste.validerItem(mNomItem.get(position));
-                    sauveProfilToJsonFile(mProfil);}
+                    mLesItems.get(position).getDescription();
+                }
                 else{
                     Liste.uncheckItem(mNomItem.get(position));
-                    sauveProfilToJsonFile(mProfil);
                     Log.i("PMR","UnChecked");
-                }
+                }*/
             }
         });
     }
 
-    public void sauveProfilToJsonFile(ProfilListeToDo p)
-    {
-        final GsonBuilder builder = new GsonBuilder();
-        final Gson gson = builder.create();
-        String filename = p.getLogin();
-        String fileContents = gson.toJson(p);
-        FileOutputStream outputStream;
-
-        try {
-            outputStream= mContext.getApplicationContext().openFileOutput(filename, mContext.getApplicationContext().MODE_PRIVATE);
-            outputStream.write(fileContents.getBytes());
-            outputStream.close();
-            Log.i("PMR","Sauvegarde du fichier"+p.getLogin());
-            Log.i("PMR",fileContents);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 }

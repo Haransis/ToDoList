@@ -6,6 +6,7 @@ import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.Header;
 import retrofit2.http.POST;
+import retrofit2.http.PUT;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
 
@@ -15,10 +16,24 @@ public interface ApiInterface {
     @GET("lists")
     public Call<ProfilListeToDo> getLists(@Header("hash") String hash);
 
+    // Ajouter une liste
     @POST("lists")
     public Call<ProfilListeToDo> addLists(@Header("hash") String hash, @Query("label") String label);
 
-    @GET("lists/{id}")
-    public Call<ListeToDo> getItems(@Header("hash") String hash, @Path("id") String id);
+    // Lister les items
+    @GET("lists/{id}/items")
+    public Call<ListeToDo> getItems(@Header("hash") String hash, @Path("id") Integer id);
+
+    // Cocher/décocher un item
+    @PUT("lists/{idListe}/items/{idItem}")
+    public Call<ListeToDo> cocherItems(@Header("hash") String hash,
+                                       @Path("idListe") String idListe, @Path("idItem") String idItem,
+                                       @Query("check") String check);
+
+    // Ajouter un item
+    @POST("lists/{idListe}/items")
+    public Call<ListeToDo> addItem(@Header("hash") String hash,
+                                         @Path("idListe") String idListe,
+                                         @Query("label") String label, @Query("url") String url);
 
 }
