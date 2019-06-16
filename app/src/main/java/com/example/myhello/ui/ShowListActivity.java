@@ -50,7 +50,6 @@ public class ShowListActivity extends AppCompatActivity{
 
         Log.d(TAG, "onCreate: "+idListe);
 
-
         // Construction d'une liste d'ItemToDo vide à envoyer au RecyclerViewAdapter1
         ListeDesToDo = new ListeToDo();
         List<ItemToDo> listeItemVide = ListeDesToDo.getLesItems();
@@ -100,8 +99,6 @@ public class ShowListActivity extends AppCompatActivity{
         // On récupère le hash à utiliser.
         final SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         String hash = settings.getString("hash","44692ee5175c131da83acad6f80edb12");
-
-
         ApiInterface Interface = ListeToDoServiceFactory.createService(ApiInterface.class);
         call = Interface.addItem(hash, Integer.parseInt(idListe), nomNewItem, urlTest);
         call.enqueue(new Callback<ListeToDo>() {
@@ -119,8 +116,8 @@ public class ShowListActivity extends AppCompatActivity{
 
 
     private void sync() {
-        Log.d(TAG, "sync: ");
-        String hash = "44692ee5175c131da83acad6f80edb12";
+        final SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        String hash = settings.getString("hash","44692ee5175c131da83acad6f80edb12");
         ApiInterface Interface = ListeToDoServiceFactory.createService(ApiInterface.class);
         call = Interface.getItems(hash,Integer.parseInt(idListe));
         call.enqueue(new Callback<ListeToDo>() {

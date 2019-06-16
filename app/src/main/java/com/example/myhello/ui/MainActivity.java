@@ -84,25 +84,26 @@ public class MainActivity extends AppCompatActivity{
                 call.enqueue(new Callback<Hash>() {
                     @Override
                     public void onResponse(Call<Hash> call, Response<Hash> response) {
+                        // Si les identifiants sont bons, on stocke le nouveau hash dans les préférences
                         if(response.isSuccessful()){
                             editor.clear();
                             editor.putString("hash", String.valueOf(response.body()));
                             editor.apply();
                         }
                         else{
+                            // Si les identifiants sont incorrects, le code est 400.
                             if(response.code()==400) {
                                 Toast.makeText(MainActivity.this, "Pseudo ou mot de passe incorrect", Toast.LENGTH_LONG).show();
                             }
                         }
                     }
 
+                    // Si l'on échoue à faire le call.
                     @Override public void onFailure(Call<Hash> call, Throwable t) {
                         Toast.makeText(MainActivity.this,"Error code : ",Toast.LENGTH_LONG).show();
                         Log.d(TAG, "onFailure() called with: call = [" + call + "], t = [" + t + "]");
                     }
                 });
-
-
 
                 // On lance la nouvelle activité
                 Intent intent = new Intent(getApplicationContext(),ChoixListActivity.class);
@@ -112,13 +113,17 @@ public class MainActivity extends AppCompatActivity{
 
     }
 
-    // On affiche le dernier pseudo utilisé i.e. celui stocké dans les préférences
+    // On affiche les derniers utilisateurs et mot de passe utilisés
+    // i.e. ceux stockés dans les préférences.
     @Override
     protected void onStart() {
         super.onStart();
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
         edtPseudo.setText(settings.getString("pseudo","alban"));
         edtPassword.setText(settings.getString("password","alban"));
+
+        // On vérifie que le réseau est accessible
+        // Si ce n'est pas le cas, on désactive le bouton.
         if(!verifReseau()){
             btnOK.setEnabled(false);
         }
@@ -132,7 +137,7 @@ public class MainActivity extends AppCompatActivity{
         return true;
     }
 
-    // permet de choisir
+    // permet de choisir quoi ouvrir
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
@@ -150,10 +155,9 @@ public class MainActivity extends AppCompatActivity{
         return super.onOptionsItemSelected(item);
     }
 
+    // La méthode sert à vérifier si le réseau est accessible
     public boolean verifReseau()
     {
-        // On vérifie si le réseau est disponible,
-        // si oui on change le statut du bouton de connexion
         ConnectivityManager cnMngr = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
         NetworkInfo netInfo = cnMngr.getActiveNetworkInfo();
 

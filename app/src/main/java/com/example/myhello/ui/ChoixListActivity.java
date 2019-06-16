@@ -42,9 +42,6 @@ public class ChoixListActivity extends AppCompatActivity implements RecyclerView
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_liste_to_dos);
 
-        // TODO : Récupération du hash stocké dans les préférences
-
-
         // Construction d'une liste de listeToDo vide à envoyer au RecyclerViewAdapter1
         ProfilListeToDo profilVide = new ProfilListeToDo("random");
         ListeDesToDo = profilVide.getMesListeToDo();
@@ -89,7 +86,6 @@ public class ChoixListActivity extends AppCompatActivity implements RecyclerView
                 // Requête POST ici
                 add(editText.getText().toString());
                 // On relance l'activité pour la rafraîchir
-                // TODO : notifyDataSetChanged
                 Intent intent = getIntent();
                 finish();
                 startActivity(intent);
@@ -107,7 +103,9 @@ public class ChoixListActivity extends AppCompatActivity implements RecyclerView
     }
 
     private void add(String nomNewListe) {
-        String hash = "44692ee5175c131da83acad6f80edb12";
+        // On récupère le hash à utiliser.
+        final SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        String hash = settings.getString("hash","44692ee5175c131da83acad6f80edb12");
         ApiInterface Interface = ListeToDoServiceFactory.createService(ApiInterface.class);
         call = Interface.addLists(hash,nomNewListe);
         call.enqueue(new Callback<ProfilListeToDo>() {
@@ -129,29 +127,44 @@ public class ChoixListActivity extends AppCompatActivity implements RecyclerView
         final SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         String hash = settings.getString("hash","44692ee5175c131da83acad6f80edb12");
         ApiInterface Interface = ListeToDoServiceFactory.createService(ApiInterface.class);
+        // On fait la requête permettant de récupérer
+        // la liste des listes de l'utilisateur connecté.
         call = Interface.getLists(hash);
+        // On rajoute l'appel à la liste des tâches
         call.enqueue(new Callback<ProfilListeToDo>() {
+
+            // Si l'on réussit à envoyer la requête
             @Override
             public void onResponse(Call<ProfilListeToDo> call, Response<ProfilListeToDo> response) {
+                // Dans le cas où la réponse indique un succès :
                 if(response.isSuccessful()){
+                    // On récupère le profil de l'utilisateur
                     ProfilListeToDo profilRecu = response.body();
+                    // Si ce profil est vide, on envoie un Toast pour avertir l'utilisateur
                     if (profilRecu.isEmpty()){Toast.makeText(ChoixListActivity.this,"Liste vide",Toast.LENGTH_LONG).show();}
+                    // Sinon, le profil
                     else {
                         ListeDesToDo = profilRecu.getMesListeToDo();
                         adapter.show(ListeDesToDo);}
-                }else {
+                }
+                // Dans le cas où la réponse indique un échec :
+                // on montre un toast qui montre le code.
+                else {
                     Log.d(TAG, "onResponse: "+response.code());
                     Toast.makeText(ChoixListActivity.this,"Error code : "+response.code(),Toast.LENGTH_LONG).show();
                 }
             }
 
+            // Si l'on ne réussit pas à envoyer la requête
             @Override public void onFailure(Call<ProfilListeToDo> call, Throwable t) {
+                // On affiche un Toast.
                 Toast.makeText(ChoixListActivity.this,"Error code : ",Toast.LENGTH_LONG).show();
                 Log.d(TAG, "onFailure() called with: call = [" + call + "], t = [" + t + "]");
             }
         });
 
     }
+
     // Instanciation de la méthode de l'interface onListListener.
     // Elle est appelée lors d'un clique sur un élément du RecyclerView.
     public void onListClick(int position) {
