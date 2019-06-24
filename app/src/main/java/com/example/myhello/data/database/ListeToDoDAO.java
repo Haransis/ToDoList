@@ -1,4 +1,7 @@
 package com.example.myhello.data.database;
 
-public class ListeToDoDAO {
+
+
+public interface ListeToDoDAO {
+
 }

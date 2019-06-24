@@ -1,20 +1,28 @@
 package com.example.myhello.data.models;
 
+import androidx.room.ColumnInfo;
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
+
 import com.google.gson.annotations.SerializedName;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+@Entity(tableName = "listeToDo")
 public class ListeToDo implements Serializable {
+
+    @PrimaryKey
+    @SerializedName("id")
+    private String mId;
+
     @SerializedName("label")
-    private String titreListeToDo;
+    @ColumnInfo(name="Titre")
+    public String titreListeToDo;
 
     @SerializedName("items")
     private List<ItemToDo> lesItems;
-
-    @SerializedName("id")
-    private String mId;
 
     public ListeToDo() {
         lesItems = new ArrayList<ItemToDo>();
