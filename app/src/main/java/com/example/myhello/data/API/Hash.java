@@ -1,4 +1,4 @@
-package com.example.myhello.data;
+package com.example.myhello.data.API;
 
 import com.google.gson.annotations.SerializedName;
 

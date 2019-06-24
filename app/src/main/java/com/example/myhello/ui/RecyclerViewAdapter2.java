@@ -15,11 +15,11 @@ import androidx.annotation.NonNull;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.myhello.data.ApiInterface;
-import com.example.myhello.data.ItemToDo;
+import com.example.myhello.data.API.ApiInterface;
+import com.example.myhello.data.models.ItemToDo;
 import com.example.myhello.R;
-import com.example.myhello.data.ListeToDo;
-import com.example.myhello.data.ListeToDoServiceFactory;
+import com.example.myhello.data.models.ListeToDo;
+import com.example.myhello.data.API.ListeToDoServiceFactory;
 
 import java.util.List;
 

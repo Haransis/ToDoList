@@ -16,9 +16,9 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.example.myhello.R;
-import com.example.myhello.data.ApiInterface;
-import com.example.myhello.data.Hash;
-import com.example.myhello.data.ListeToDoServiceFactory;
+import com.example.myhello.data.API.ApiInterface;
+import com.example.myhello.data.API.Hash;
+import com.example.myhello.data.API.ListeToDoServiceFactory;
 
 import retrofit2.Call;
 import retrofit2.Callback;

@@ -1,6 +1,7 @@
-package com.example.myhello.data;
+package com.example.myhello.data.API;
 
-import java.util.List;
+import com.example.myhello.data.models.ListeToDo;
+import com.example.myhello.data.models.ProfilListeToDo;
 
 import retrofit2.Call;
 import retrofit2.http.GET;

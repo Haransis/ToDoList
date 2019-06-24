@@ -10,10 +10,8 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.myhello.R;
-import com.example.myhello.data.ListeToDo;
-import com.example.myhello.data.ProfilListeToDo;
+import com.example.myhello.data.models.ListeToDo;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class RecyclerViewAdapter1 extends RecyclerView.Adapter<RecyclerViewAdapter1.ViewHolder>{

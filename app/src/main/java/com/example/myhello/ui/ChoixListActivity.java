@@ -5,7 +5,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -14,13 +13,12 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.myhello.data.ApiInterface;
-import com.example.myhello.data.ListeToDo;
-import com.example.myhello.data.ListeToDoServiceFactory;
-import com.example.myhello.data.ProfilListeToDo;
+import com.example.myhello.data.API.ApiInterface;
+import com.example.myhello.data.models.ListeToDo;
+import com.example.myhello.data.API.ListeToDoServiceFactory;
+import com.example.myhello.data.models.ProfilListeToDo;
 import com.example.myhello.R;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
