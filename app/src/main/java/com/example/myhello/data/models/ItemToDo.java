@@ -35,16 +35,16 @@ public class ItemToDo implements Serializable {
         this.fait = fait;
     }
 
-    public ItemToDo(String description) {
-        this.description = description;
-        this.fait = 0;
-    }
 
     public String getDescription() {
         return description;
     }
 
     public int getId() {return id;}
+
+    public int getChecked() {
+        return this.fait;
+    }
 
     public Boolean getFait() {
         return fait == 1;

@@ -11,16 +11,16 @@ import com.example.myhello.data.models.ListeToDo;
 
 @Database(entities = { ListeToDo.class, ItemToDo.class }, version = 1)
 public abstract class RoomListeToDoDb extends RoomDatabase {
-    public abstract ListeToDoDAO getPosts();
+    public abstract ListeToDoDAO getListes();
 
     private static RoomListeToDoDb INSTANCE;
 
-    // permet de vérifier si il y a déjà une instance de la database construite.
+    // permet de vérifier s'il y a déjà une instance de la database construite.
     public static RoomListeToDoDb getDatabase(final Context context){
         if (INSTANCE == null){
             synchronized (RoomListeToDoDb.class) {
                 if (INSTANCE == null){
-                    INSTANCE = Room.databaseBuilder(context.getApplicationContext(), RoomListeToDoDb.class, "roomtodolist").allowMainThreadQueries().build();
+                    INSTANCE = Room.databaseBuilder(context.getApplicationContext(), RoomListeToDoDb.class, "roomtodolist").build();
                 }
             }
         }

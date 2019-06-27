@@ -1,8 +1,5 @@
 package com.example.myhello.data.models;
 
-import androidx.room.ColumnInfo;
-import androidx.room.Entity;
-import androidx.room.PrimaryKey;
 
 import com.google.gson.annotations.SerializedName;
 
@@ -10,19 +7,15 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-@Entity(tableName = "listes")
 public class ListeToDo implements Serializable {
 
     @SerializedName("id")
-    @PrimaryKey (autoGenerate = true)
     private String mId;
 
     @SerializedName("label")
-    @ColumnInfo(name="titre")
     public String titreListeToDo;
 
     @SerializedName("items")
-    @ColumnInfo(name = "listeItems")
     private List<ItemToDo> lesItems;
 
     public ListeToDo() {
@@ -32,6 +25,12 @@ public class ListeToDo implements Serializable {
     public ListeToDo(String titreListeToDo, List<ItemToDo> lesItems, String id) {
         this.titreListeToDo = titreListeToDo;
         this.lesItems = lesItems;
+        this.mId = id ;
+    }
+
+    public ListeToDo(String titreListeToDo, String id) {
+        this.titreListeToDo = titreListeToDo;
+        lesItems = new ArrayList<>();
         this.mId = id ;
     }
 
@@ -45,14 +44,12 @@ public class ListeToDo implements Serializable {
 
     public ListeToDo(String titreListeToDo) {
         this.titreListeToDo = titreListeToDo;
-        lesItems = new ArrayList<ItemToDo>();
+        lesItems = new ArrayList<>();
     }
 
     public String getTitreListeToDo() {
         return titreListeToDo;
     }
-
-    public String getId(){return mId; }
 
     public Boolean isEmpty(){
         if(lesItems.isEmpty()){return true;}

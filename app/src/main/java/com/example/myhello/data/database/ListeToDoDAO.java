@@ -6,15 +6,13 @@ import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 
-import com.example.myhello.data.models.ListeToDo;
-
-import java.util.ArrayList;
+import java.util.List;
 
 @Dao
 public interface ListeToDoDAO {
-    @Query("SELECT * FROM listeToDo")
-    ArrayList<ListeToDo> getListes();
+    @Query("SELECT * FROM listes")
+    List<ListeToDoDb> getAll();
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    void save(ArrayList<ListeToDo> listes);
+    void save(List<ListeToDoDb> listes);
 }

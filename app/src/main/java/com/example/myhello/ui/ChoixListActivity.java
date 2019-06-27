@@ -6,10 +6,13 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -19,13 +22,22 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.example.myhello.data.API.ApiInterface;
+import com.example.myhello.data.Network.ServiceManager;
+import com.example.myhello.data.Utils;
+import com.example.myhello.data.database.Converter;
+import com.example.myhello.data.database.ListeToDoDb;
+import com.example.myhello.data.database.RoomListeToDoDb;
 import com.example.myhello.data.models.ListeToDo;
 import com.example.myhello.data.API.ListeToDoServiceFactory;
 import com.example.myhello.data.models.ProfilListeToDo;
 import com.example.myhello.R;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -38,12 +50,17 @@ public class ChoixListActivity extends AppCompatActivity implements RecyclerView
     private List<ListeToDo> ListeDesToDo;
     private Call<ProfilListeToDo> call;
     private BroadcastReceiver networkChangeReceiver;
+    private FloatingActionButton floatingActionButton;
+    public boolean isConnected;
+    public RoomListeToDoDb database;
+    public Converter converter;
+    ExecutorService executor = Executors.newSingleThreadExecutor();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_liste_to_dos);
-
 
         // Construction d'une liste de listeToDo vide à envoyer au RecyclerViewAdapter1
         ProfilListeToDo profilVide = new ProfilListeToDo("random");
@@ -57,8 +74,11 @@ public class ChoixListActivity extends AppCompatActivity implements RecyclerView
         // On implémente un LayoutManager basique au RecyclerView
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
+        //On instancie la base de donnée
+        database = RoomListeToDoDb.getDatabase(getApplicationContext());
+
         // On crée le bouton flottant qui permet d'ajouter des listes
-        final FloatingActionButton floatingActionButton = findViewById(R.id.fab);
+        floatingActionButton = findViewById(R.id.fab);
         // Les variables ont besoin d'être déclarées en final car on les utilise dans un cast local.
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -68,7 +88,26 @@ public class ChoixListActivity extends AppCompatActivity implements RecyclerView
         });
 
         //On fait appel à la méthode d'appel à la requête
-        syncAPI();
+        syncFromAPI();
+    }
+
+    @Override
+    protected void onStart() {
+        // On instancie le broadcast receiver.
+        super.onStart();
+        networkChangeReceiver = new NetworkChangeReceiver();
+        registerReceiver(networkChangeReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+    }
+
+    @Override
+    protected void onResume(){
+        super.onResume();
+        if (isConnected){
+            syncFromAPI();
+        }
+        else{
+            syncFromBDD();
+        }
     }
 
     // La méthode CreerAlertDialog crée une fenêtre où l'utisateur peut
@@ -124,7 +163,7 @@ public class ChoixListActivity extends AppCompatActivity implements RecyclerView
     }
 
 
-    private void syncAPI() {
+    private void syncFromAPI() {
 
         // On récupère le hash à utiliser.
         final SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
@@ -148,6 +187,7 @@ public class ChoixListActivity extends AppCompatActivity implements RecyclerView
                     // Sinon, le profil
                     else {
                         ListeDesToDo = profilRecu.getMesListeToDo();
+                        syncToBDD();
                         adapter.show(ListeDesToDo);}
                 }
                 // Dans le cas où la réponse indique un échec :
@@ -177,9 +217,74 @@ public class ChoixListActivity extends AppCompatActivity implements RecyclerView
         // On envoie le nom de la liste sur laquelle le clique a été effectué.
         Bundle data = new Bundle();
         intent.putExtras(data);
-        intent.putExtra("liste",ListeDesToDo.get(position).getId());
+        intent.putExtra("liste",ListeDesToDo.get(position).getmId());
 
         this.startActivity(intent);
+    }
+
+    private void syncFromBDD(){
+        Log.d(TAG, "syncBDD: ");
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                List<ListeToDoDb> listesDb = database.getListes().getAll();
+                ListeDesToDo = converter.fromDb(listesDb);
+                adapter.show(ListeDesToDo);
+            }
+        });
+
+    }
+
+    private List<ListeToDoDb> convertFromDb() {
+        return null;
+    }
+
+    private List<ListeToDoDb> convertToDb() {
+
+        return null;
+    }
+
+    public void syncToBDD(){
+        Log.d(TAG, "syncToBDD: ");
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                database.getListes().save(ListeDesToDo);
+            }
+        });
+    }
+
+    public class NetworkChangeReceiver extends BroadcastReceiver {
+
+
+        private static final String TAG = "NetworkChangeReceiver";
+
+        @Override
+        public void onReceive(final Context context, final Intent intent) {
+
+            isConnected = checkInternet(context);
+            // On a récupéré l'accès à Internet
+            if(isConnected){
+                findViewById(R.id.fab).setVisibility(View.VISIBLE);
+                syncFromAPI();
+            }
+            // On a perdu l'accès à Internet
+            else{
+                Toast.makeText(getApplicationContext(),"Réseau perdu, lecture depuis le cache", Toast.LENGTH_LONG).show();
+                findViewById(R.id.fab).setVisibility(View.INVISIBLE);
+                syncFromBDD();
+            }
+
+        }
+
+        boolean checkInternet(Context context) {
+            ServiceManager serviceManager = new ServiceManager(context);
+            if (serviceManager.isNetworkAvailable()) {
+                return true;
+            } else {
+                return false;
+            }
+        }
     }
 
 }

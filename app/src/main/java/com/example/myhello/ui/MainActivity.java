@@ -8,7 +8,6 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
@@ -56,10 +55,6 @@ public class MainActivity extends AppCompatActivity{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        // On instancie le broadcast receiver.
-        networkChangeReceiver = new NetworkChangeReceiver();
-        registerReceiver(networkChangeReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
 
         // On relie les éléments du layout activity_main à l'activité :
 
@@ -117,6 +112,7 @@ public class MainActivity extends AppCompatActivity{
 
                 // On lance la nouvelle activité
                 Intent intent = new Intent(getApplicationContext(),ChoixListActivity.class);
+                unregisterReceiver(networkChangeReceiver);
                 startActivity(intent);
             }
         });
@@ -131,6 +127,9 @@ public class MainActivity extends AppCompatActivity{
         edtPseudo.setText(settings.getString("pseudo","alban"));
         edtPassword.setText(settings.getString("password","alban"));
 
+        // On instancie le broadcast receiver.
+        networkChangeReceiver = new NetworkChangeReceiver();
+        registerReceiver(networkChangeReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
 
     }
 
@@ -170,11 +169,13 @@ public class MainActivity extends AppCompatActivity{
     public class NetworkChangeReceiver extends BroadcastReceiver {
 
         private static final String TAG = "NetworkChangeReceiverFromMain";
+        public boolean isConnected;
         @Override
         public void onReceive(final Context context, final Intent intent) {
 
+            isConnected = checkInternet(context);
             // On a récupéré l'accès à Internet
-            if(checkInternet(context)){
+            if(isConnected){
                 btnOK.getBackground().setColorFilter(Color.WHITE, PorterDuff.Mode.DARKEN);
             }
             // On a perdu l'accès à Internet
