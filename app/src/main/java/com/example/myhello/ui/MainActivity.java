@@ -1,7 +1,12 @@
 package com.example.myhello.ui;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
@@ -19,6 +24,7 @@ import com.example.myhello.R;
 import com.example.myhello.data.API.ApiInterface;
 import com.example.myhello.data.API.Hash;
 import com.example.myhello.data.API.ListeToDoServiceFactory;
+import com.example.myhello.data.Network.ServiceManager;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -38,6 +44,7 @@ public class MainActivity extends AppCompatActivity{
     private EditText edtPassword = null;
     private Call<Hash> call;
     private Button btnOK;
+    private BroadcastReceiver networkChangeReceiver;
 
     private void alerter(String s) {
         Log.i(TAG,s);
@@ -50,8 +57,11 @@ public class MainActivity extends AppCompatActivity{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // On relie les éléments du layout activity_main à l'activité :
+        // On instancie le broadcast receiver.
+        networkChangeReceiver = new NetworkChangeReceiver();
+        registerReceiver(networkChangeReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
 
+        // On relie les éléments du layout activity_main à l'activité :
 
         btnOK = findViewById(R.id.btnOK); // Un bouton qui permet de valider le choix
         edtPseudo = findViewById(R.id.edtPseudo); // Un editText qui permet de saisir le choix
@@ -110,7 +120,6 @@ public class MainActivity extends AppCompatActivity{
                 startActivity(intent);
             }
         });
-
     }
 
     // On affiche les derniers utilisateurs et mot de passe utilisés
@@ -122,11 +131,7 @@ public class MainActivity extends AppCompatActivity{
         edtPseudo.setText(settings.getString("pseudo","alban"));
         edtPassword.setText(settings.getString("password","alban"));
 
-        // On vérifie que le réseau est accessible
-        // Si ce n'est pas le cas, on désactive le bouton.
-        if(!verifReseau()){
-            btnOK.setEnabled(false);
-        }
+
     }
 
 
@@ -155,35 +160,38 @@ public class MainActivity extends AppCompatActivity{
         return super.onOptionsItemSelected(item);
     }
 
-    // La méthode sert à vérifier si le réseau est accessible
-    public boolean verifReseau()
-    {
-        ConnectivityManager cnMngr = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
-        NetworkInfo netInfo = cnMngr.getActiveNetworkInfo();
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(networkChangeReceiver);
+    }
 
-        String sType = "Aucun réseau détecté";
-        Boolean bStatut = false;
-        if (netInfo != null)
-        {
 
-            NetworkInfo.State netState = netInfo.getState();
+    public class NetworkChangeReceiver extends BroadcastReceiver {
 
-            if (netState.compareTo(NetworkInfo.State.CONNECTED) == 0)
-            {
-                bStatut = true;
-                int netType= netInfo.getType();
-                switch (netType)
-                {
-                    case ConnectivityManager.TYPE_MOBILE :
-                        sType = "Réseau mobile détecté"; break;
-                    case ConnectivityManager.TYPE_WIFI :
-                        sType = "Réseau wifi détecté"; break;
-                }
+        private static final String TAG = "NetworkChangeReceiverFromMain";
+        @Override
+        public void onReceive(final Context context, final Intent intent) {
 
+            // On a récupéré l'accès à Internet
+            if(checkInternet(context)){
+                btnOK.getBackground().setColorFilter(Color.WHITE, PorterDuff.Mode.DARKEN);
             }
+            // On a perdu l'accès à Internet
+            else{
+                Toast.makeText(getApplicationContext(),"Réseau perdu, les modifications seront sauvegardées en local jusqu'au retour du réseau",Toast.LENGTH_SHORT).show();
+                btnOK.getBackground().setColorFilter(Color.RED, PorterDuff.Mode.DARKEN);
+            }
+
         }
 
-        this.alerter(sType);
-        return bStatut;
+        boolean checkInternet(Context context) {
+            ServiceManager serviceManager = new ServiceManager(context);
+            if (serviceManager.isNetworkAvailable()) {
+                return true;
+            } else {
+                return false;
+            }
+        }
     }
 }

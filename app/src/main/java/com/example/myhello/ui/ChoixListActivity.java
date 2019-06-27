@@ -5,9 +5,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.BroadcastReceiver;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -34,11 +37,13 @@ public class ChoixListActivity extends AppCompatActivity implements RecyclerView
     private RecyclerViewAdapter1 adapter;
     private List<ListeToDo> ListeDesToDo;
     private Call<ProfilListeToDo> call;
+    private BroadcastReceiver networkChangeReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_liste_to_dos);
+
 
         // Construction d'une liste de listeToDo vide à envoyer au RecyclerViewAdapter1
         ProfilListeToDo profilVide = new ProfilListeToDo("random");
@@ -63,7 +68,7 @@ public class ChoixListActivity extends AppCompatActivity implements RecyclerView
         });
 
         //On fait appel à la méthode d'appel à la requête
-        sync();
+        syncAPI();
     }
 
     // La méthode CreerAlertDialog crée une fenêtre où l'utisateur peut
@@ -119,7 +124,7 @@ public class ChoixListActivity extends AppCompatActivity implements RecyclerView
     }
 
 
-    private void sync() {
+    private void syncAPI() {
 
         // On récupère le hash à utiliser.
         final SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());

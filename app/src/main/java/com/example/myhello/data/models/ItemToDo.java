@@ -8,7 +8,7 @@ import com.google.gson.annotations.SerializedName;
 
 import java.io.Serializable;
 
-
+@Entity(tableName = "items")
 public class ItemToDo implements Serializable {
 
 

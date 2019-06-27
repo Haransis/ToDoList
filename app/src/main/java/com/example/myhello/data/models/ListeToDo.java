@@ -10,7 +10,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-@Entity(tableName = "listeToDo")
+@Entity(tableName = "listes")
 public class ListeToDo implements Serializable {
 
     @SerializedName("id")

@@ -12,7 +12,7 @@ import java.util.ArrayList;
 
 @Dao
 public interface ListeToDoDAO {
-    @Query("SELECT * FROM listes")
+    @Query("SELECT * FROM listeToDo")
     ArrayList<ListeToDo> getListes();
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
