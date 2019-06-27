@@ -13,12 +13,15 @@ import java.util.List;
 @Entity(tableName = "listeToDo")
 public class ListeToDo implements Serializable {
 
+    @SerializedName("id")
     @PrimaryKey (autoGenerate = true)
     private String mId;
 
+    @SerializedName("label")
     @ColumnInfo(name="titre")
     public String titreListeToDo;
 
+    @SerializedName("items")
     @ColumnInfo(name = "listeItems")
     private List<ItemToDo> lesItems;
 
