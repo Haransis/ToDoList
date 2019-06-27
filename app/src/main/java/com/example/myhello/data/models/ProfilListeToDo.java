@@ -8,10 +8,7 @@ import java.util.List;
 
 public class ProfilListeToDo implements Serializable {
 
-    @SerializedName("lists")
     private List<ListeToDo> mesListeToDo;
-
-    @SerializedName("pseudo")
     private String login;
 
     public ProfilListeToDo(List<ListeToDo> mesListeToDo, String login) {

@@ -1,6 +1,8 @@
 package com.example.myhello.data.models;
 
+import androidx.room.ColumnInfo;
 import androidx.room.Entity;
+import androidx.room.PrimaryKey;
 
 import com.google.gson.annotations.SerializedName;
 
@@ -9,14 +11,18 @@ import java.io.Serializable;
 
 public class ItemToDo implements Serializable {
 
-    @SerializedName("label")
+    @PrimaryKey (autoGenerate = true)
+    private int id;
+
+    @ColumnInfo (name = "description")
     private String description;
 
-    @SerializedName("checked")
+    @ColumnInfo (name = "checked")
     private int fait;
 
-    @SerializedName("id")
-    private int id;
+    public void setId(int id) {
+        this.id = id;
+    }
 
     public ItemToDo(String description, int fait) {
         this.description = description;
