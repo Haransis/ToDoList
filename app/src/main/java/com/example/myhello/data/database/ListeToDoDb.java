@@ -1,5 +1,6 @@
 package com.example.myhello.data.database;
 
+import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
@@ -7,13 +8,13 @@ import androidx.room.PrimaryKey;
 @Entity(tableName = "listes")
 public class ListeToDoDb {
     @PrimaryKey
-    private String mId;
+    @NonNull String mId;
 
     @ColumnInfo(name="titre")
-    public String titreListeToDo;
+    String titreListeToDo;
 
     public String getmId() {
-        return mId;
+        return this.mId;
     }
 
     public void setmId(String mId) {
@@ -21,7 +22,7 @@ public class ListeToDoDb {
     }
 
     public String getTitreListeToDo() {
-        return titreListeToDo;
+        return this.titreListeToDo;
     }
 
     public void setTitreListeToDo(String titreListeToDo) {

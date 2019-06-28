@@ -8,23 +8,17 @@ import com.google.gson.annotations.SerializedName;
 
 import java.io.Serializable;
 
-@Entity(tableName = "items")
 public class ItemToDo implements Serializable {
 
 
     @SerializedName("id")
-    @PrimaryKey (autoGenerate = true)
     private int id;
 
     @SerializedName("label")
-    @ColumnInfo (name = "description")
     private String description;
 
     @SerializedName("checked")
-    @ColumnInfo (name = "checked")
     private int fait;
-
-
 
     public void setId(int id) {
         this.id = id;

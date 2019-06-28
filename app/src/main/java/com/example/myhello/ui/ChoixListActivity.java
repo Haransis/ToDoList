@@ -14,6 +14,7 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -51,9 +52,12 @@ public class ChoixListActivity extends AppCompatActivity implements RecyclerView
     private Call<ProfilListeToDo> call;
     private BroadcastReceiver networkChangeReceiver;
     private FloatingActionButton floatingActionButton;
-    public boolean isConnected;
     public RoomListeToDoDb database;
     public Converter converter;
+    NetworkInfo networkInfo;
+    String hash;
+    ApiInterface Interface;
+    ConnectivityManager connectivityManager;
     ExecutorService executor = Executors.newSingleThreadExecutor();
 
 
@@ -61,6 +65,8 @@ public class ChoixListActivity extends AppCompatActivity implements RecyclerView
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_liste_to_dos);
+
+        converter = new Converter();
 
         // Construction d'une liste de listeToDo vide à envoyer au RecyclerViewAdapter1
         ProfilListeToDo profilVide = new ProfilListeToDo("random");
@@ -87,8 +93,10 @@ public class ChoixListActivity extends AppCompatActivity implements RecyclerView
             }
         });
 
-        //On fait appel à la méthode d'appel à la requête
-        syncFromAPI();
+        // On récupère le hash à utiliser.
+        final SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        hash = settings.getString("hash","44692ee5175c131da83acad6f80edb12");
+        Interface = ListeToDoServiceFactory.createService(ApiInterface.class);
     }
 
     @Override
@@ -97,17 +105,13 @@ public class ChoixListActivity extends AppCompatActivity implements RecyclerView
         super.onStart();
         networkChangeReceiver = new NetworkChangeReceiver();
         registerReceiver(networkChangeReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+
     }
 
     @Override
-    protected void onResume(){
-        super.onResume();
-        if (isConnected){
-            syncFromAPI();
-        }
-        else{
-            syncFromBDD();
-        }
+    protected void onPause(){
+        super.onPause();
+        unregisterReceiver(networkChangeReceiver);
     }
 
     // La méthode CreerAlertDialog crée une fenêtre où l'utisateur peut
@@ -144,6 +148,10 @@ public class ChoixListActivity extends AppCompatActivity implements RecyclerView
         alertDialog.show();
     }
 
+    /**
+     * Cette méthode génère l'appel de la requête POST à l'API.
+     * @param nomNewListe le titre de la nouvelle liste
+     */
     private void add(String nomNewListe) {
         // On récupère le hash à utiliser.
         final SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
@@ -163,12 +171,11 @@ public class ChoixListActivity extends AppCompatActivity implements RecyclerView
     }
 
 
+    /**
+     * Récupère les données depuis l'API.
+     */
     private void syncFromAPI() {
 
-        // On récupère le hash à utiliser.
-        final SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        String hash = settings.getString("hash","44692ee5175c131da83acad6f80edb12");
-        ApiInterface Interface = ListeToDoServiceFactory.createService(ApiInterface.class);
         // On fait la requête permettant de récupérer
         // la liste des listes de l'utilisateur connecté.
         call = Interface.getLists(hash);
@@ -178,12 +185,13 @@ public class ChoixListActivity extends AppCompatActivity implements RecyclerView
             // Si l'on réussit à envoyer la requête
             @Override
             public void onResponse(Call<ProfilListeToDo> call, Response<ProfilListeToDo> response) {
+                Log.d(TAG, "onResponse: ");
                 // Dans le cas où la réponse indique un succès :
                 if(response.isSuccessful()){
                     // On récupère le profil de l'utilisateur
                     ProfilListeToDo profilRecu = response.body();
                     // Si ce profil est vide, on envoie un Toast pour avertir l'utilisateur
-                    if (profilRecu.isEmpty()){Toast.makeText(ChoixListActivity.this,"Liste vide",Toast.LENGTH_LONG).show();}
+                    if (profilRecu.isEmpty()){Toast.makeText(ChoixListActivity.this,"Liste vide",Toast.LENGTH_SHORT).show();}
                     // Sinon, le profil
                     else {
                         ListeDesToDo = profilRecu.getMesListeToDo();
@@ -191,17 +199,17 @@ public class ChoixListActivity extends AppCompatActivity implements RecyclerView
                         adapter.show(ListeDesToDo);}
                 }
                 // Dans le cas où la réponse indique un échec :
-                // on montre un toast qui montre le code.
+                // on affiche un toast qui montre le code d'erreur.
                 else {
                     Log.d(TAG, "onResponse: "+response.code());
-                    Toast.makeText(ChoixListActivity.this,"Error code : "+response.code(),Toast.LENGTH_LONG).show();
+                    Toast.makeText(ChoixListActivity.this,"Error code : "+response.code(),Toast.LENGTH_SHORT).show();
                 }
             }
 
             // Si l'on ne réussit pas à envoyer la requête
             @Override public void onFailure(Call<ProfilListeToDo> call, Throwable t) {
                 // On affiche un Toast.
-                Toast.makeText(ChoixListActivity.this,"Error code : ",Toast.LENGTH_LONG).show();
+                Toast.makeText(ChoixListActivity.this,"Error code : ",Toast.LENGTH_SHORT).show();
                 Log.d(TAG, "onFailure() called with: call = [" + call + "], t = [" + t + "]");
             }
         });
@@ -214,42 +222,41 @@ public class ChoixListActivity extends AppCompatActivity implements RecyclerView
         // Lors du clique, on lance ShowListActivity.
         Intent intent = new Intent(this,ShowListActivity.class);
 
-        // On envoie le nom de la liste sur laquelle le clique a été effectué.
-        Bundle data = new Bundle();
-        intent.putExtras(data);
-        intent.putExtra("liste",ListeDesToDo.get(position).getmId());
 
-        this.startActivity(intent);
+        // On envoie le nom de la liste sur laquelle le clique a été effectué.
+            Bundle data = new Bundle();
+            intent.putExtras(data);
+            intent.putExtra("liste", ListeDesToDo.get(position).getmId());
+
+            this.startActivity(intent);
     }
 
+    /**
+     * Récupère les données de la BDD
+     */
     private void syncFromBDD(){
-        Log.d(TAG, "syncBDD: ");
+        Log.d(TAG, "syncFromBDD: ");
         executor.execute(new Runnable() {
             @Override
             public void run() {
                 List<ListeToDoDb> listesDb = database.getListes().getAll();
                 ListeDesToDo = converter.fromDb(listesDb);
-                adapter.show(ListeDesToDo);
             }
         });
-
+        // on actualise les données de l'adapter
+        adapter.show(ListeDesToDo);
     }
 
-    private List<ListeToDoDb> convertFromDb() {
-        return null;
-    }
-
-    private List<ListeToDoDb> convertToDb() {
-
-        return null;
-    }
-
+    /**
+     * Synchronise les données avec la BDD
+     */
     public void syncToBDD(){
-        Log.d(TAG, "syncToBDD: ");
+        Log.d(TAG, "syncToBDD: " + ListeDesToDo.get(0).getTitreListeToDo());
         executor.execute(new Runnable() {
             @Override
             public void run() {
-                database.getListes().save(ListeDesToDo);
+                List<ListeToDoDb> listeForDb = converter.from(ListeDesToDo);
+                database.getListes().save(listeForDb);
             }
         });
     }
@@ -258,6 +265,7 @@ public class ChoixListActivity extends AppCompatActivity implements RecyclerView
 
 
         private static final String TAG = "NetworkChangeReceiver";
+        public boolean isConnected;
 
         @Override
         public void onReceive(final Context context, final Intent intent) {
@@ -270,7 +278,7 @@ public class ChoixListActivity extends AppCompatActivity implements RecyclerView
             }
             // On a perdu l'accès à Internet
             else{
-                Toast.makeText(getApplicationContext(),"Réseau perdu, lecture depuis le cache", Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(),"Réseau perdu, lecture depuis le cache", Toast.LENGTH_SHORT).show();
                 findViewById(R.id.fab).setVisibility(View.INVISIBLE);
                 syncFromBDD();
             }

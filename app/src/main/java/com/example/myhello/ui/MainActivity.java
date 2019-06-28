@@ -44,6 +44,7 @@ public class MainActivity extends AppCompatActivity{
     private Call<Hash> call;
     private Button btnOK;
     private BroadcastReceiver networkChangeReceiver;
+    String hash;
 
     private void alerter(String s) {
         Log.i(TAG,s);
@@ -57,6 +58,9 @@ public class MainActivity extends AppCompatActivity{
         setContentView(R.layout.activity_main);
 
         // On relie les éléments du layout activity_main à l'activité :
+        // On récupère le hash à utiliser.
+        final SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        hash = settings.getString("hash","44692ee5175c131da83acad6f80edb12");
 
         btnOK = findViewById(R.id.btnOK); // Un bouton qui permet de valider le choix
         edtPseudo = findViewById(R.id.edtPseudo); // Un editText qui permet de saisir le choix
@@ -67,10 +71,6 @@ public class MainActivity extends AppCompatActivity{
                 // On récupère les informations des deux editTexts.
                 String pseudo = edtPseudo.getText().toString();
                 String password = edtPassword.getText().toString();
-
-                // On récupère le hash à utiliser.
-                final SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-                String hash = settings.getString("hash","44692ee5175c131da83acad6f80edb12");
 
                 // On les stocke dans les préférences pour qu'elles puissent
                 // réapparaître lors du lancement de l'application.
@@ -90,6 +90,8 @@ public class MainActivity extends AppCompatActivity{
                     @Override
                     public void onResponse(Call<Hash> call, Response<Hash> response) {
                         // Si les identifiants sont bons, on stocke le nouveau hash dans les préférences
+                        // Remarque : l'appel à l'API génère une fois sur deux une réponse fausse.
+                        // Je n'ai pas réussi à identifier le problème.
                         if(response.isSuccessful()){
                             editor.clear();
                             editor.putString("hash", String.valueOf(response.body()));
@@ -159,6 +161,10 @@ public class MainActivity extends AppCompatActivity{
         return super.onOptionsItemSelected(item);
     }
 
+
+    /**
+     * Il est nécessaire d'unregister le broadcast receiver.
+     */
     @Override
     public void onDestroy() {
         super.onDestroy();
@@ -166,6 +172,10 @@ public class MainActivity extends AppCompatActivity{
     }
 
 
+    // La classe NetWorkChangeReceiver détecte en continue
+    // si l'on a accès au réseau.
+    // On l'implément au sein de chaque activité pour pouvoir y écrire
+    // les instructions à effectuer lors d'un changement de réseau.
     public class NetworkChangeReceiver extends BroadcastReceiver {
 
         private static final String TAG = "NetworkChangeReceiverFromMain";

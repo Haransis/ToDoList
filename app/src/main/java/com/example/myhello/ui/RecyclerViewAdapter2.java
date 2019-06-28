@@ -1,7 +1,10 @@
 package com.example.myhello.ui;
 
 import android.content.Context;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -14,14 +17,20 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.room.RoomDatabase;
 
 import com.example.myhello.data.API.ApiInterface;
+import com.example.myhello.data.database.ItemToDoDb;
+import com.example.myhello.data.database.RoomListeToDoDb;
 import com.example.myhello.data.models.ItemToDo;
 import com.example.myhello.R;
 import com.example.myhello.data.models.ListeToDo;
 import com.example.myhello.data.API.ListeToDoServiceFactory;
 
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -36,6 +45,8 @@ public class RecyclerViewAdapter2 extends RecyclerView.Adapter<RecyclerViewAdapt
     private List<ItemToDo> mLesItems;
     private int mIdListe;
     private Context mContext;
+    NetworkInfo networkInfo;
+    ConnectivityManager connectivityManager;
 
     public RecyclerViewAdapter2(Context context, List<ItemToDo> LesItems, int idListe){
         this.mLesItems = LesItems;
@@ -83,6 +94,9 @@ public class RecyclerViewAdapter2 extends RecyclerView.Adapter<RecyclerViewAdapt
 
         final ItemToDo item = mLesItems.get(position);
 
+        connectivityManager = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+        networkInfo = connectivityManager.getActiveNetworkInfo();
+
         Log.d(TAG, "onBindViewHolder: " + item.getFait().toString());
 
         // Permet d'initialiser les checkBox pour qu'elles correspondent
@@ -106,8 +120,8 @@ public class RecyclerViewAdapter2 extends RecyclerView.Adapter<RecyclerViewAdapt
                 String hash = settings.getString("hash","44692ee5175c131da83acad6f80edb12");
                 ApiInterface Interface = ListeToDoServiceFactory.createService(ApiInterface.class);
                 Call<ListeToDo> call;
-                String check;
-                int idItem = item.getId();
+                final String check;
+                final int idItem = item.getId();
                 // Si l'item vient d'être coché
                 if (buttonView.isChecked()){
                     // On le valide
@@ -116,18 +130,30 @@ public class RecyclerViewAdapter2 extends RecyclerView.Adapter<RecyclerViewAdapt
                 else{
                     check = "0";
                 }
-                call = Interface.cocherItems(hash,mIdListe,idItem,check);
-                call.enqueue(new Callback<ListeToDo>() {
-                    @Override
-                    public void onResponse(Call<ListeToDo> call, Response<ListeToDo> response) {
-                        Log.d(TAG, "onResponse: "+response.code());
-                    }
-                    @Override public void onFailure(Call<ListeToDo> call, Throwable t) {
-                        Log.d("TAG", "onFailure() called with: call = [" + call + "], t = [" + t + "]");
-                    }
-                });
+                boolean isConnected = networkInfo != null && networkInfo.isConnectedOrConnecting();
+                if (isConnected){
+                    call = Interface.cocherItems(hash,mIdListe,idItem,check);
+                    call.enqueue(new Callback<ListeToDo>() {
+                        @Override
+                        public void onResponse(Call<ListeToDo> call, Response<ListeToDo> response) {
+                            Log.d(TAG, "onResponse: "+response.code());
+                        }
+                        @Override public void onFailure(Call<ListeToDo> call, Throwable t) {
+                            Log.d("TAG", "onFailure() called with: call = [" + call + "], t = [" + t + "]");
+                        }
+                    });
+                }
+                else{
+                    final RoomDatabase database = RoomListeToDoDb.getDatabase(mContext);
+                    ExecutorService executor = Executors.newSingleThreadExecutor();
+                    executor.execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            ((RoomListeToDoDb) database).getItems().update(new ItemToDoDb(idItem,item.getDescription(),Integer.parseInt(check),mIdListe));
+                        }
+                    });
+                }
             }
         });
     }
-
 }

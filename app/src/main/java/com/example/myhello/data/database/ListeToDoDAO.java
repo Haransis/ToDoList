@@ -14,5 +14,5 @@ public interface ListeToDoDAO {
     List<ListeToDoDb> getAll();
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    void save(List<ListeToDoDb> listes);
+    void save(List<ListeToDoDb> items);
 }

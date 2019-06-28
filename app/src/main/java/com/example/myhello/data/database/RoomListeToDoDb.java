@@ -6,12 +6,14 @@ import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
 
-import com.example.myhello.data.models.ItemToDo;
-import com.example.myhello.data.models.ListeToDo;
 
-@Database(entities = { ListeToDo.class, ItemToDo.class }, version = 1)
+
+@Database(entities = { ListeToDoDb.class, ItemToDoDb.class }, version = 3)
 public abstract class RoomListeToDoDb extends RoomDatabase {
+
     public abstract ListeToDoDAO getListes();
+
+    public abstract ItemToDoDAO getItems();
 
     private static RoomListeToDoDb INSTANCE;
 
@@ -20,7 +22,7 @@ public abstract class RoomListeToDoDb extends RoomDatabase {
         if (INSTANCE == null){
             synchronized (RoomListeToDoDb.class) {
                 if (INSTANCE == null){
-                    INSTANCE = Room.databaseBuilder(context.getApplicationContext(), RoomListeToDoDb.class, "roomtodolist").build();
+                    INSTANCE = Room.databaseBuilder(context.getApplicationContext(), RoomListeToDoDb.class, "roomtodolist").fallbackToDestructiveMigration().build();
                 }
             }
         }
