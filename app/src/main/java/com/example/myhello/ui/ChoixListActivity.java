@@ -237,12 +237,19 @@ public class ChoixListActivity extends AppCompatActivity implements RecyclerView
         executor.execute(new Runnable() {
             @Override
             public void run() {
-                List<ListeToDoDb> listesDb = database.getListes().getAll();
+                List<ListeToDoDb> listesDb = database.getListes().getAll(hash);
+                Log.d(TAG, "run: " +listesDb.get(0).getTitreListeToDo());
                 ListeDesToDo = converter.fromDb(listesDb);
+                Log.d(TAG, "run: "+ListeDesToDo.get(0).getTitreListeToDo());
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        adapter.show(ListeDesToDo);
+                    }
+                });
             }
         });
         // on actualise les données de l'adapter
-        adapter.show(ListeDesToDo);
     }
 
     /**
@@ -253,7 +260,8 @@ public class ChoixListActivity extends AppCompatActivity implements RecyclerView
         executor.execute(new Runnable() {
             @Override
             public void run() {
-                List<ListeToDoDb> listeForDb = converter.from(ListeDesToDo);
+                List<ListeToDoDb> listeForDb = converter.from(ListeDesToDo, hash);
+                Log.d(TAG, "run: "+listeForDb.get(0).getTitreListeToDo());
                 database.getListes().save(listeForDb);
             }
         });

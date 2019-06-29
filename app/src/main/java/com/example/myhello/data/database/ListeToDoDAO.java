@@ -10,8 +10,8 @@ import java.util.List;
 
 @Dao
 public interface ListeToDoDAO {
-    @Query("SELECT * FROM listes")
-    List<ListeToDoDb> getAll();
+    @Query("SELECT * FROM listes WHERE hashProfil LIKE:hash")
+    List<ListeToDoDb> getAll(String hash);
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void save(List<ListeToDoDb> items);

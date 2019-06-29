@@ -13,6 +13,17 @@ public class ListeToDoDb {
     @ColumnInfo(name="titre")
     String titreListeToDo;
 
+    @ColumnInfo(name="hashProfil")
+    String hash;
+
+    public String getHash() {
+        return hash;
+    }
+
+    public void setHash(String hash) {
+        this.hash = hash;
+    }
+
     public String getmId() {
         return this.mId;
     }

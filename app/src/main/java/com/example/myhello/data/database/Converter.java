@@ -8,15 +8,16 @@ import java.util.List;
 
 public class Converter {
 
-    public ListeToDoDb from(ListeToDo listeToDo) {
+    public ListeToDoDb from(ListeToDo listeToDo,String hash) {
         ListeToDoDb listeToDoDb = new ListeToDoDb();
-        listeToDoDb.setmId(listeToDo.getTitreListeToDo());
-        listeToDoDb.setTitreListeToDo(listeToDo.getmId());
+        listeToDoDb.setmId(listeToDo.getmId());
+        listeToDoDb.setTitreListeToDo(listeToDo.getTitreListeToDo());
+        listeToDoDb.setHash(hash);
         return listeToDoDb;
     }
 
     public ListeToDo fromDb(ListeToDoDb listeToDoDb){
-        return new ListeToDo(listeToDoDb.getmId(), listeToDoDb.getTitreListeToDo());
+        return new ListeToDo(listeToDoDb.getTitreListeToDo(), listeToDoDb.getmId());
     }
 
     public List<ListeToDo> fromDb(List<ListeToDoDb> listesDb){
@@ -27,10 +28,10 @@ public class Converter {
         return listes;
     }
 
-    public List<ListeToDoDb> from(List<ListeToDo> listes){
+    public List<ListeToDoDb> from(List<ListeToDo> listes, String hash){
         List<ListeToDoDb> listesDb = new ArrayList<>(listes.size());
         for (ListeToDo listeToDo: listes){
-            listesDb.add(from(listeToDo));
+            listesDb.add(from(listeToDo, hash));
         }
         return listesDb;
     }

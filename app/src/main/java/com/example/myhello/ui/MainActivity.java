@@ -154,13 +154,22 @@ public class MainActivity extends AppCompatActivity{
             public void onResponse(Call<Hash> call, Response<Hash> response) {
                 // Si les identifiants sont bons, on stocke le nouveau hash dans les préférences
                 if(response.isSuccessful()){
-                    Hash hashRecu = response.body();
+                    final Hash hashRecu = response.body();
                     // On stocke les nouvelles informations de connexion dans les préférences pour qu'elles puissent
                     // réapparaître lors du lancement de l'application.
                     SharedPreferences.Editor editor = settings.edit();
                     editor.clear();
-                    editor.putString("hash", hash);
+                    editor.putString("hash", hashRecu.getHash());
                     editor.apply();
+
+                    executor.execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            // on sauvegarde le profil dans la BdD.
+                            ProfilToDoDb profilToSave = new ProfilToDoDb(hashRecu.getHash(), pseudo, password);
+                            database.getProfil().save(profilToSave);
+                        }
+                    });
 
                     // On lance la nouvelle activité
                     Intent intent = new Intent(getApplicationContext(), ChoixListActivity.class);
