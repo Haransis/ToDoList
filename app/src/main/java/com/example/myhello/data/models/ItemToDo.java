@@ -24,7 +24,8 @@ public class ItemToDo implements Serializable {
         this.id = id;
     }
 
-    public ItemToDo(String description, int fait) {
+    public ItemToDo(int id, String description, int fait) {
+        this.id = id;
         this.description = description;
         this.fait = fait;
     }

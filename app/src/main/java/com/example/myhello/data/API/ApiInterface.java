@@ -1,5 +1,6 @@
 package com.example.myhello.data.API;
 
+import com.example.myhello.data.models.ItemToDo;
 import com.example.myhello.data.models.ListeToDo;
 import com.example.myhello.data.models.ProfilListeToDo;
 
@@ -32,13 +33,13 @@ public interface ApiInterface {
 
     // Cocher/décocher un item
     @PUT("lists/{idListe}/items/{idItem}")
-    public Call<ListeToDo> cocherItems(@Header("hash") String hash,
-                                       @Path("idListe") int idListe, @Path("idItem") int idItem,
-                                       @Query("check") String check);
+    public Call<ItemToDo> cocherItems(@Header("hash") String hash,
+                                      @Path("idListe") int idListe, @Path("idItem") int idItem,
+                                      @Query("check") String check);
 
     // Ajouter un item
     @POST("lists/{idListe}/items")
-    public Call<ListeToDo> addItem(@Header("hash") String hash,
+    public Call<ItemToDo> addItem(@Header("hash") String hash,
                                          @Path("idListe") int idListe,
                                          @Query("label") String label, @Query("url") String url);
 

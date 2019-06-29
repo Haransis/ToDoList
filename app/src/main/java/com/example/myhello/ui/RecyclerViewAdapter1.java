@@ -41,16 +41,22 @@ public class RecyclerViewAdapter1 extends RecyclerView.Adapter<RecyclerViewAdapt
         return mNomListe.size();
     }
 
+    @Override
+    // On relie le ViewHolder à l'Item affiché par l'adapter.
+    public void onBindViewHolder(@NonNull ViewHolder holder, final int position) {
+        holder.nomListe.setText(mNomListe.get(position).getTitreListeToDo());
+    }
+
     public void show(List<ListeToDo> mesListesToDo){
         mNomListe = mesListesToDo;
         notifyDataSetChanged();
     }
 
+
     class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
 
         TextView nomListe;
         CoordinatorLayout parentLayout;
-        CheckBox checkBox;
         OnListListener mOnListListener;
 
         // le ViewHolder permet d'ordonner la liste des item
@@ -69,12 +75,6 @@ public class RecyclerViewAdapter1 extends RecyclerView.Adapter<RecyclerViewAdapt
             mOnListListener.onListClick(getAdapterPosition());
         }
     }
-
-    @Override
-    // On relie le ViewHolder à l'Item affiché par l'adapter.
-    public void onBindViewHolder(@NonNull ViewHolder holder, final int position) {
-        holder.nomListe.setText(mNomListe.get(position).getTitreListeToDo());
-        }
 
     // Déclaration de l'interface
     public interface OnListListener{

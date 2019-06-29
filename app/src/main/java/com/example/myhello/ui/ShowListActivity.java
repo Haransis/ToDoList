@@ -24,7 +24,6 @@ import com.example.myhello.data.API.ApiInterface;
 import com.example.myhello.data.Network.ServiceManager;
 import com.example.myhello.data.database.Converter;
 import com.example.myhello.data.database.ItemToDoDb;
-import com.example.myhello.data.database.ListeToDoDb;
 import com.example.myhello.data.database.RoomListeToDoDb;
 import com.example.myhello.data.models.ItemToDo;
 import com.example.myhello.data.models.ListeToDo;
@@ -40,16 +39,19 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class ShowListActivity extends AppCompatActivity{
+public class ShowListActivity extends AppCompatActivity implements RecyclerViewAdapter2.OnItemListener{
 
     private static final String TAG = "ShowListActivity";
     private String urlTest = "url test";
     private String idListe;
     private ListeToDo ListeDesToDo;
     private List<ItemToDo> listeDesItems;
+    private List<ItemToDo> listeDesItemsModifies;
     private RecyclerViewAdapter2 adapter;
     private BroadcastReceiver networkChangeReceiver;
     private Call<ListeToDo> call;
+    private Call<ItemToDo> call2;
+    private boolean modification = false;
     public Converter converter;
     public RoomListeToDoDb database;
     ApiInterface Interface;
@@ -74,13 +76,15 @@ public class ShowListActivity extends AppCompatActivity{
         //On instancie la base de donnée
         database = RoomListeToDoDb.getDatabase(getApplicationContext());
 
-        // Construction d'une liste d'ItemToDo vide à envoyer au RecyclerViewAdapter1
+        // Construction de listes d'ItemToDo vide à envoyer au RecyclerViewAdapter1
+        // et pour stocker les modifications effectuées en local.
         ListeDesToDo = new ListeToDo();
         listeDesItems = ListeDesToDo.getLesItems();
+        listeDesItemsModifies = ListeDesToDo.getLesItems();
 
         // On réutilise la même méthode que dans ChoixListActivity
         RecyclerView recyclerView = findViewById(R.id.recycler_view);
-        adapter = new RecyclerViewAdapter2(getApplicationContext(),listeDesItems,Integer.parseInt(idListe));
+        adapter = new RecyclerViewAdapter2(this,listeDesItems,Integer.parseInt(idListe));
 
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -140,14 +144,14 @@ public class ShowListActivity extends AppCompatActivity{
 
     private void add(String nomNewItem) {
         ApiInterface Interface = ListeToDoServiceFactory.createService(ApiInterface.class);
-        call = Interface.addItem(hash, Integer.parseInt(idListe), nomNewItem, urlTest);
-        call.enqueue(new Callback<ListeToDo>() {
+        call2 = Interface.addItem(hash, Integer.parseInt(idListe), nomNewItem, urlTest);
+        call2.enqueue(new Callback<ItemToDo>() {
             @Override
-            public void onResponse(Call<ListeToDo> call, Response<ListeToDo> response) {
+            public void onResponse(Call<ItemToDo> call, Response<ItemToDo> response) {
                 Log.d(TAG, "onResponse: "+response.code());
             }
 
-            @Override public void onFailure(Call<ListeToDo> call, Throwable t) {
+            @Override public void onFailure(Call<ItemToDo> call, Throwable t) {
                 Toast.makeText(ShowListActivity.this,"Error code : "+t,Toast.LENGTH_SHORT).show();
                 Log.d(TAG, "onFailure() called with: call = [" + call + "], t = [" + t + "]");
             }
@@ -208,16 +212,92 @@ public class ShowListActivity extends AppCompatActivity{
             @Override
             public void run() {
                 List<ItemToDoDb> itemsForDb = converter.fromItem(listeDesItems, Integer.parseInt(idListe));
+                Log.d(TAG, "run: "+itemsForDb);
                 database.getItems().save(itemsForDb);
             }
         });
     }
 
     /**
-     * Permettra à terme de synchroniser les changements avec l'API
+     * Permettra de synchroniser les changements avec l'API
      */
     public void syncToAPI(){
-        Log.d(TAG, "syncToAPI: ");
+        for (final ItemToDo itemACocher: listeDesItemsModifies){
+            String check = getFaitConverti(itemACocher);
+            Log.d(TAG, "syncToAPI: "+itemACocher.getDescription());
+            Log.d(TAG, "syncToAPI: "+itemACocher.getId());
+            Log.d(TAG, "syncToAPI: "+check);
+            call2 = Interface.cocherItems(hash, Integer.parseInt(idListe), itemACocher.getId(), check);
+            call2.enqueue(new Callback<ItemToDo>() {
+                @Override
+                public void onResponse(Call<ItemToDo> call, Response<ItemToDo> response) {
+                    if(response.isSuccessful()){
+                        Log.d(TAG, "onResponse: "+itemACocher.getDescription()+" a été (dé)coché");
+                        modification = false;
+                    }
+                    else{
+                        Toast.makeText(getApplicationContext(),"Synchronisation échouée",Toast.LENGTH_SHORT).show();
+                        Log.d(TAG, "onResponse: "+response.code());
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<ItemToDo> call, Throwable t) {
+                    Toast.makeText(getApplicationContext(),"Synchronisation échouée",Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+
+    }
+
+    private String getFaitConverti(ItemToDo item) {
+        if(item.getFait()){return "1";}
+        else{return "0";}
+    }
+
+    @Override
+    public void onItemClick(final int position) {
+        //Lors du clique on actualise l'API/la BdD
+        final ItemToDo itemACocher = listeDesItems.get(position);
+
+        //On marque l'item comme coché
+        if(itemACocher.getFait()){itemACocher.setFait(0);}
+        else{itemACocher.setFait(1);}
+
+        final String check = getFaitConverti(itemACocher);
+
+        if (estConnecte()){
+            call2 = Interface.cocherItems(hash,Integer.parseInt(idListe),itemACocher.getId(),check);
+            call2.enqueue(new Callback<ItemToDo>() {
+                @Override
+                public void onResponse(Call<ItemToDo> call, Response<ItemToDo> response) {
+                    Log.d(TAG, "onResponse: "+response.code());
+                }
+                @Override public void onFailure(Call<ItemToDo> call, Throwable t) {
+                    Log.d("TAG", "onFailure() called with: call = [" + call + "], t = [" + t + "]");
+                }
+            });
+        }
+
+        else{
+            modification = true;
+            listeDesItemsModifies.add(itemACocher);
+            executor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    database.getItems().update(new ItemToDoDb(position,itemACocher.getDescription(),Integer.parseInt(check),Integer.parseInt(idListe)));
+                }
+            });
+        }
+    }
+
+    /**
+     * @return un booléen indiquant l'état de connection
+     */
+    private boolean estConnecte(){
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(getApplicationContext().CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+        return networkInfo != null && networkInfo.isConnectedOrConnecting();
     }
 
     public class NetworkChangeReceiver extends BroadcastReceiver {
@@ -232,9 +312,9 @@ public class ShowListActivity extends AppCompatActivity{
             isConnected = checkInternet(context);
             // On a récupéré l'accès à Internet
             if(isConnected){
-                syncToAPI();
                 findViewById(R.id.fab).setVisibility(View.VISIBLE);
-                syncFromAPI();
+                if(modification){syncToAPI();}
+                else{syncFromAPI();}
             }
             // On a perdu l'accès à Internet
             else{

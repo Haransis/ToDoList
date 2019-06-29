@@ -41,11 +41,12 @@ public class Converter {
         itemToDoDb.setId(itemToDo.getId());
         itemToDoDb.setDescription(itemToDo.getDescription());
         itemToDoDb.setIdListe(idListe);
+        itemToDoDb.setFait(itemToDo.getFait()?1:0);
         return itemToDoDb;
     }
 
     public ItemToDo fromItemDb(ItemToDoDb itemToDoDb){
-        return new ItemToDo(itemToDoDb.getDescription(), itemToDoDb.getId());
+        return new ItemToDo(itemToDoDb.getId(),itemToDoDb.getDescription(), itemToDoDb.getFait());
     }
 
     public List<ItemToDo> fromItemDb(List<ItemToDoDb> itemsDb){

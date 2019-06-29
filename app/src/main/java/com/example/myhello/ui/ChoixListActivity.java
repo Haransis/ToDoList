@@ -11,10 +11,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.graphics.Color;
-import android.graphics.PorterDuff;
 import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -24,7 +21,6 @@ import android.widget.Toast;
 
 import com.example.myhello.data.API.ApiInterface;
 import com.example.myhello.data.Network.ServiceManager;
-import com.example.myhello.data.Utils;
 import com.example.myhello.data.database.Converter;
 import com.example.myhello.data.database.ListeToDoDb;
 import com.example.myhello.data.database.RoomListeToDoDb;
@@ -34,11 +30,9 @@ import com.example.myhello.data.models.ProfilListeToDo;
 import com.example.myhello.R;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -238,12 +232,11 @@ public class ChoixListActivity extends AppCompatActivity implements RecyclerView
             @Override
             public void run() {
                 List<ListeToDoDb> listesDb = database.getListes().getAll(hash);
-                Log.d(TAG, "run: " +listesDb.get(0).getTitreListeToDo());
-                ListeDesToDo = converter.fromDb(listesDb);
-                Log.d(TAG, "run: "+ListeDesToDo.get(0).getTitreListeToDo());
+                final List<ListeToDo> listeAAfficher = converter.fromDb(listesDb);
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+                        ListeDesToDo = listeAAfficher;
                         adapter.show(ListeDesToDo);
                     }
                 });
@@ -302,3 +295,4 @@ public class ChoixListActivity extends AppCompatActivity implements RecyclerView
     }
 
 }
+//TODO : Ajouter dans les préférences si on a eu une modification dans la base de donnée. Vérifier lors du onStart() de ChoiixList et Main si c'est le cas et agir en conséquence.
