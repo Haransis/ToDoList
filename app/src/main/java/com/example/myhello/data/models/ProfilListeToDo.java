@@ -9,9 +9,6 @@ import java.util.List;
 
 public class ProfilListeToDo implements Serializable {
 
-    @SerializedName("id")
-    private String id;
-
     @SerializedName("lists")
     private List<ListeToDo> mesListeToDo;
 

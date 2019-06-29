@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
@@ -24,6 +25,11 @@ import com.example.myhello.data.API.ApiInterface;
 import com.example.myhello.data.API.Hash;
 import com.example.myhello.data.API.ListeToDoServiceFactory;
 import com.example.myhello.data.Network.ServiceManager;
+import com.example.myhello.data.database.ProfilToDoDb;
+import com.example.myhello.data.database.RoomListeToDoDb;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -44,6 +50,9 @@ public class MainActivity extends AppCompatActivity{
     private Call<Hash> call;
     private Button btnOK;
     private BroadcastReceiver networkChangeReceiver;
+    private RoomListeToDoDb database;
+    ExecutorService executor = Executors.newSingleThreadExecutor();
+
 
     private void alerter(String s) {
         Log.i(TAG,s);
@@ -55,6 +64,9 @@ public class MainActivity extends AppCompatActivity{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        //On instancie la base de donnée
+        database = RoomListeToDoDb.getDatabase(getApplicationContext());
 
         // On relie les éléments du layout activity_main à l'activité :
         // On récupère le hash à utiliser.
@@ -72,59 +84,110 @@ public class MainActivity extends AppCompatActivity{
                 final String pseudo = edtPseudo.getText().toString();
                 final String password = edtPassword.getText().toString();
 
-                Log.d(TAG, "onClick: pseudo entré "+pseudo);
-                Log.d(TAG, "onClick: password entré " +password);
-
-                // On change l'url de la factory
+                // On change l'url de la factory à partir des préférences
                 ListeToDoServiceFactory.changeUrl(settings.getString("url","http://tomnab.fr/todo-api/"));
 
-                // On demande la création d'un nouveau hash
-                ApiInterface Interface = ListeToDoServiceFactory.createService(ApiInterface.class);
-                call = Interface.getHash(hash,pseudo,password);
-                call.enqueue(new Callback<Hash>() {
-                    @Override
-                    public void onResponse(Call<Hash> call, Response<Hash> response) {
-                        // Si les identifiants sont bons, on stocke le nouveau hash dans les préférences
-                        if(response.isSuccessful()){
-                            Hash hashRecu = response.body();
-                            // On stocke les nouvelles informations de connexion dans les préférences pour qu'elles puissent
-                            // réapparaître lors du lancement de l'application.
-                            SharedPreferences.Editor editor = settings.edit();
-                            editor.clear();
-                            editor.putString("hash", hash);
-                            editor.putString("pseudo", pseudo);
-                            editor.putString("password", password);
-                            editor.apply();
+                // Si on est connecté,
+                // on demande la création d'un nouveau hash que l'on stocke dans les préférences
+                if (estConnecte()){
+                    recupererHashFromAPI(pseudo, password, hash, settings);
+                }
 
-                            // On lance la nouvelle activité
-                            Intent intent = new Intent(getApplicationContext(),ChoixListActivity.class);
-                            unregisterReceiver(networkChangeReceiver);
-                            startActivity(intent);
-                        }
-                        else{
-                            // Si les identifiants sont incorrects, le code est 400.
-                            if(response.code()==400) {
-                                Toast.makeText(MainActivity.this, "Pseudo ou mot de passe incorrect", Toast.LENGTH_LONG).show();
-                            }
-                            // Si l'on a pas l'autorisation i.e. que le hash est faux,
-                            // on le supprime.
-                            // Remarque : ce cas ne doit pas arriver mais on ne sait jamais.
-                            if (response.code()==403) {
-                                SharedPreferences.Editor editor = settings.edit();
-                                editor.clear();
-                                editor.apply();
+                //Sinon, on récupère le hash correspondant dans la BdD
+                else{
+                    recupererHashFromBdD(pseudo, password, settings);
+                }
+            }
+        });
+    }
 
-                                Intent intent = new Intent(getApplicationContext(),MainActivity.class);
-                                startActivity(intent);
-                            }
-                        }
-                    }
-                    // Si l'on échoue à faire le call.
-                    @Override public void onFailure(Call<Hash> call, Throwable t) {
-                        Toast.makeText(MainActivity.this,"Error code : ",Toast.LENGTH_LONG).show();
-                        Log.d(TAG, "onFailure() called with: call = [" + call + "], t = [" + t + "]");
-                    }
-                });
+    /**
+     * Permet de recuperer le hash depuis la BdD.
+     * Si l'appel réussit, on lance ChoixListActivity.
+     * @param pseudo le nom rentré par l'utilisateur
+     */
+    private void recupererHashFromBdD(final String pseudo, final String password, final SharedPreferences settings) {
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                ProfilToDoDb profilBDD = database.getProfil().getProfil(pseudo, password);
+                String newHash = profilBDD.getHash();
+                if(newHash.isEmpty()){
+                    Toast.makeText(MainActivity.this, "Pseudo ou mot de passe incorrect", Toast.LENGTH_LONG).show();
+                }
+                else{
+                    SharedPreferences.Editor editor = settings.edit();
+                    editor.clear();
+                    editor.putString("hash", newHash);
+                    editor.apply();
+
+                    // On lance la nouvelle activité
+                    Intent intent = new Intent(getApplicationContext(), ChoixListActivity.class);
+                    startActivity(intent);
+                }
+            }
+        });
+    }
+
+    /**
+     * @return un booléen indiquant l'état de connection
+     */
+    private boolean estConnecte(){
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(getApplicationContext().CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+        return networkInfo != null && networkInfo.isConnectedOrConnecting();
+    }
+
+    /**
+     * Permet de recuperer le hash depuis l'API.
+     * Si l'appel réussit on lance ChoixListActivity.
+     * @param pseudo
+     * @param password
+     * @param hash
+     * @param settings
+     */
+    private void recupererHashFromAPI(final String pseudo, final String password, final String hash, final SharedPreferences settings) {
+        ApiInterface Interface = ListeToDoServiceFactory.createService(ApiInterface.class);
+        call = Interface.getHash(hash,pseudo,password);
+        call.enqueue(new Callback<Hash>() {
+            @Override
+            public void onResponse(Call<Hash> call, Response<Hash> response) {
+                // Si les identifiants sont bons, on stocke le nouveau hash dans les préférences
+                if(response.isSuccessful()){
+                    Hash hashRecu = response.body();
+                    // On stocke les nouvelles informations de connexion dans les préférences pour qu'elles puissent
+                    // réapparaître lors du lancement de l'application.
+                    SharedPreferences.Editor editor = settings.edit();
+                    editor.clear();
+                    editor.putString("hash", hash);
+                    editor.apply();
+
+                    // On lance la nouvelle activité
+                    Intent intent = new Intent(getApplicationContext(), ChoixListActivity.class);
+                    startActivity(intent);
+                }
+
+                // Si les identifiants sont incorrects, le code est 400.
+                if(response.code()==400) {
+                    Toast.makeText(MainActivity.this, "Pseudo ou mot de passe incorrect", Toast.LENGTH_LONG).show();
+                }
+
+                // Si l'on a pas l'autorisation i.e. que le hash est faux, on le supprime.
+                // Remarque : ce cas ne doit pas arriver mais on ne sait jamais.
+                if (response.code()==403) {
+                    SharedPreferences.Editor editor = settings.edit();
+                    editor.clear();
+                    editor.apply();
+
+                    Intent intent = new Intent(getApplicationContext(),MainActivity.class);
+                    startActivity(intent);
+                }
+
+            }
+            // Si l'on échoue à faire le call.
+            @Override public void onFailure(Call<Hash> call, Throwable t) {
+                Toast.makeText(MainActivity.this,"Error code : ",Toast.LENGTH_LONG).show();
+                Log.d(TAG, "onFailure() called with: call = [" + call + "], t = [" + t + "]");
             }
         });
     }
@@ -175,8 +238,8 @@ public class MainActivity extends AppCompatActivity{
      * Il est nécessaire d'unregister le broadcast receiver.
      */
     @Override
-    public void onDestroy() {
-        super.onDestroy();
+    public void onPause() {
+        super.onPause();
         unregisterReceiver(networkChangeReceiver);
     }
 
@@ -202,7 +265,6 @@ public class MainActivity extends AppCompatActivity{
                 Toast.makeText(getApplicationContext(),"Réseau perdu, les modifications seront sauvegardées en local jusqu'au retour du réseau",Toast.LENGTH_SHORT).show();
                 btnOK.getBackground().setColorFilter(Color.RED, PorterDuff.Mode.DARKEN);
             }
-
         }
 
         boolean checkInternet(Context context) {

@@ -54,10 +54,8 @@ public class ChoixListActivity extends AppCompatActivity implements RecyclerView
     private FloatingActionButton floatingActionButton;
     public RoomListeToDoDb database;
     public Converter converter;
-    NetworkInfo networkInfo;
     String hash;
     ApiInterface Interface;
-    ConnectivityManager connectivityManager;
     ExecutorService executor = Executors.newSingleThreadExecutor();
 
 
