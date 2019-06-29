@@ -1,7 +1,5 @@
 package com.example.myhello.data.models;
 
-import androidx.room.ColumnInfo;
-import androidx.room.Entity;
 
 import com.google.gson.annotations.SerializedName;
 
@@ -9,16 +7,19 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-@Entity(tableName = "profils")
 public class ProfilListeToDo implements Serializable {
 
+    @SerializedName("id")
+    private String id;
+
     @SerializedName("lists")
-    @ColumnInfo(name="listes")
     private List<ListeToDo> mesListeToDo;
 
-    @ColumnInfo(name="pseudo")
     @SerializedName("pseudo")
     private String login;
+
+    @SerializedName("hash")
+    private String hash;
 
     public ProfilListeToDo(List<ListeToDo> mesListeToDo, String login) {
         this.mesListeToDo = mesListeToDo;
