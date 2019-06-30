@@ -23,6 +23,8 @@ public interface ItemToDoDAO {
     @Query("SELECT * FROM items WHERE idListe LIKE :listeId")
     List<ItemToDoDb> getAll(int listeId);
 
+    @Query("SELECT * FROM items")
+    List<ItemToDoDb> getAllItems();
 
     /**
      * Permet de sauvegarder les Items dans la BdD

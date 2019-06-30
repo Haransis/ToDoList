@@ -10,7 +10,6 @@ import java.io.Serializable;
 
 public class ItemToDo implements Serializable {
 
-
     @SerializedName("id")
     private int id;
 
@@ -20,14 +19,25 @@ public class ItemToDo implements Serializable {
     @SerializedName("checked")
     private int fait;
 
+    public int getListeId() {
+        return listeId;
+    }
+
+    public void setListeId(int listeId) {
+        this.listeId = listeId;
+    }
+
+    private int listeId;
+
     public void setId(int id) {
         this.id = id;
     }
 
-    public ItemToDo(int id, String description, int fait) {
+    public ItemToDo(int id, String description, int fait, int listeId) {
         this.id = id;
         this.description = description;
         this.fait = fait;
+        this.listeId = listeId;
     }
 
 

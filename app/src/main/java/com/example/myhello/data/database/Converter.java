@@ -1,5 +1,7 @@
 package com.example.myhello.data.database;
 
+import android.util.Log;
+
 import com.example.myhello.data.models.ItemToDo;
 import com.example.myhello.data.models.ListeToDo;
 
@@ -7,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Converter {
+    private static final String TAG = "Converter";
 
     public ListeToDoDb from(ListeToDo listeToDo,String hash) {
         ListeToDoDb listeToDoDb = new ListeToDoDb();
@@ -46,7 +49,8 @@ public class Converter {
     }
 
     public ItemToDo fromItemDb(ItemToDoDb itemToDoDb){
-        return new ItemToDo(itemToDoDb.getId(),itemToDoDb.getDescription(), itemToDoDb.getFait());
+        ItemToDo newItemToDo =new ItemToDo(itemToDoDb.getId(),itemToDoDb.getDescription(), itemToDoDb.getFait(), itemToDoDb.getIdListe());
+        return newItemToDo;
     }
 
     public List<ItemToDo> fromItemDb(List<ItemToDoDb> itemsDb){

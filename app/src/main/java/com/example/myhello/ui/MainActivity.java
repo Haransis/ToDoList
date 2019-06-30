@@ -27,6 +27,7 @@ import com.example.myhello.data.API.ListeToDoServiceFactory;
 import com.example.myhello.data.Network.ServiceManager;
 import com.example.myhello.data.database.ProfilToDoDb;
 import com.example.myhello.data.database.RoomListeToDoDb;
+import com.example.myhello.data.database.Synchron;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -48,9 +49,12 @@ public class MainActivity extends AppCompatActivity{
     private EditText edtPseudo = null;
     private EditText edtPassword = null;
     private Call<Hash> call;
+    private String hash;
     private Button btnOK;
     private BroadcastReceiver networkChangeReceiver;
     private RoomListeToDoDb database;
+    private Synchron synchroniseur;
+    private boolean modification;
     ExecutorService executor = Executors.newSingleThreadExecutor();
 
 
@@ -65,13 +69,15 @@ public class MainActivity extends AppCompatActivity{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        synchroniseur = new Synchron(getApplicationContext());
+
         //On instancie la base de donnée
         database = RoomListeToDoDb.getDatabase(getApplicationContext());
 
         // On relie les éléments du layout activity_main à l'activité :
         // On récupère le hash à utiliser.
         final SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        final String hash = settings.getString("hash","44692ee5175c131da83acad6f80edb12");
+        hash = settings.getString("hash","44692ee5175c131da83acad6f80edb12");
         Log.d(TAG, "onCreate: "+hash);
 
         btnOK = findViewById(R.id.btnOK); // Un bouton qui permet de valider le choix
@@ -213,7 +219,13 @@ public class MainActivity extends AppCompatActivity{
         // On instancie le broadcast receiver.
         networkChangeReceiver = new NetworkChangeReceiver();
         registerReceiver(networkChangeReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+    }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
+        modification = settings.getBoolean("modifié", false);
     }
 
 
@@ -249,7 +261,12 @@ public class MainActivity extends AppCompatActivity{
     @Override
     public void onPause() {
         super.onPause();
-        unregisterReceiver(networkChangeReceiver);
+        try{
+            unregisterReceiver(networkChangeReceiver);
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
 
@@ -265,10 +282,20 @@ public class MainActivity extends AppCompatActivity{
         public void onReceive(final Context context, final Intent intent) {
 
             isConnected = checkInternet(context);
+
             // On a récupéré l'accès à Internet
             if(isConnected){
                 btnOK.getBackground().setColorFilter(Color.WHITE, PorterDuff.Mode.DARKEN);
+                if(modification){
+                    if(synchroniseur.syncItemsToApi(hash)==200) {
+                        Toast.makeText(getApplicationContext(), "Synchronisation réussie", Toast.LENGTH_SHORT).show();
+                        modification = false;
+                    }else{
+                        Toast.makeText(getApplicationContext(),"Synchronisation échouée", Toast.LENGTH_SHORT).show();
+                    }
+                }
             }
+
             // On a perdu l'accès à Internet
             else{
                 Toast.makeText(getApplicationContext(),"Réseau perdu, les modifications seront sauvegardées en local jusqu'au retour du réseau",Toast.LENGTH_SHORT).show();

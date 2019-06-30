@@ -24,6 +24,7 @@ import com.example.myhello.data.Network.ServiceManager;
 import com.example.myhello.data.database.Converter;
 import com.example.myhello.data.database.ListeToDoDb;
 import com.example.myhello.data.database.RoomListeToDoDb;
+import com.example.myhello.data.database.Synchron;
 import com.example.myhello.data.models.ListeToDo;
 import com.example.myhello.data.API.ListeToDoServiceFactory;
 import com.example.myhello.data.models.ProfilListeToDo;
@@ -46,8 +47,11 @@ public class ChoixListActivity extends AppCompatActivity implements RecyclerView
     private Call<ProfilListeToDo> call;
     private BroadcastReceiver networkChangeReceiver;
     private FloatingActionButton floatingActionButton;
+    private boolean modification;
     public RoomListeToDoDb database;
+    public Synchron synchroniseur;
     public Converter converter;
+    public SharedPreferences settings;
     String hash;
     ApiInterface Interface;
     ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -59,6 +63,7 @@ public class ChoixListActivity extends AppCompatActivity implements RecyclerView
         setContentView(R.layout.activity_liste_to_dos);
 
         converter = new Converter();
+        synchroniseur = new Synchron(getApplicationContext());
 
         // Construction d'une liste de listeToDo vide à envoyer au RecyclerViewAdapter1
         ProfilListeToDo profilVide = new ProfilListeToDo("random");
@@ -86,7 +91,7 @@ public class ChoixListActivity extends AppCompatActivity implements RecyclerView
         });
 
         // On récupère le hash à utiliser.
-        final SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         hash = settings.getString("hash","44692ee5175c131da83acad6f80edb12");
         Interface = ListeToDoServiceFactory.createService(ApiInterface.class);
     }
@@ -97,7 +102,12 @@ public class ChoixListActivity extends AppCompatActivity implements RecyclerView
         super.onStart();
         networkChangeReceiver = new NetworkChangeReceiver();
         registerReceiver(networkChangeReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+    }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        modification = settings.getBoolean("modifié", false);
     }
 
     @Override
@@ -273,7 +283,19 @@ public class ChoixListActivity extends AppCompatActivity implements RecyclerView
             // On a récupéré l'accès à Internet
             if(isConnected){
                 findViewById(R.id.fab).setVisibility(View.VISIBLE);
-                syncFromAPI();
+                Log.d(TAG, "onReceive: "+modification);
+                if(modification){
+                    if(synchroniseur.syncItemsToApi(hash)==200) {
+                        Toast.makeText(getApplicationContext(), "Synchronisation réussie", Toast.LENGTH_SHORT).show();
+                        modification = false;
+                        SharedPreferences.Editor editor = settings.edit();
+                        editor.remove("modifié");
+                        editor.apply();
+                    }else{
+                        Toast.makeText(getApplicationContext(),"Synchronisation échouée", Toast.LENGTH_SHORT).show();
+                    }
+                }
+                else{syncFromAPI();}
             }
             // On a perdu l'accès à Internet
             else{
@@ -295,4 +317,3 @@ public class ChoixListActivity extends AppCompatActivity implements RecyclerView
     }
 
 }
-//TODO : Ajouter dans les préférences si on a eu une modification dans la base de donnée. Vérifier lors du onStart() de ChoiixList et Main si c'est le cas et agir en conséquence.
