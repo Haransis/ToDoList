@@ -177,7 +177,6 @@ public class ChoixListActivity extends AppCompatActivity implements RecyclerView
      * Récupère les données depuis l'API.
      */
     private void syncFromAPI() {
-
         // On fait la requête permettant de récupérer
         // la liste des listes de l'utilisateur connecté.
         call = Interface.getLists(hash);

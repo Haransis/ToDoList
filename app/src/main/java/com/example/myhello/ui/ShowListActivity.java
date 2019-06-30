@@ -24,6 +24,7 @@ import com.example.myhello.data.API.ApiInterface;
 import com.example.myhello.data.Network.ServiceManager;
 import com.example.myhello.data.database.Converter;
 import com.example.myhello.data.database.ItemToDoDb;
+import com.example.myhello.data.database.RoomListeModifieeDb;
 import com.example.myhello.data.database.RoomListeToDoDb;
 import com.example.myhello.data.database.Synchron;
 import com.example.myhello.data.models.ItemToDo;
@@ -58,6 +59,7 @@ public class ShowListActivity extends AppCompatActivity implements RecyclerViewA
     private boolean modification = false;
     public Converter converter;
     public RoomListeToDoDb database;
+    public RoomListeModifieeDb databaseModifiee;
     public SharedPreferences settings;
     ApiInterface Interface;
     String hash;
@@ -80,8 +82,9 @@ public class ShowListActivity extends AppCompatActivity implements RecyclerViewA
 
         Log.d(TAG, "onCreate: "+idListe);
 
-        //On instancie la base de donnée
+        //On instancie les bases de donnée
         database = RoomListeToDoDb.getDatabase(getApplicationContext());
+        databaseModifiee = RoomListeModifieeDb.getDatabase(getApplicationContext());
 
         // Construction de listes d'ItemToDo vide à envoyer au RecyclerViewAdapter1
         // et pour stocker les modifications effectuées en local.
@@ -273,6 +276,7 @@ public class ShowListActivity extends AppCompatActivity implements RecyclerViewA
                 public void run() {
                     ItemToDoDb itemToDoDb=converter.fromItem(itemACocher,Integer.parseInt(idListe));
                     database.getItems().update(itemToDoDb);
+                    databaseModifiee.getItems().save(itemToDoDb);
                 }
             });
         }

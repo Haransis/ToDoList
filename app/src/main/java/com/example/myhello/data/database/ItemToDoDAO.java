@@ -33,6 +33,9 @@ public interface ItemToDoDAO {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void save(List<ItemToDoDb> items);
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    void save(ItemToDoDb item);
+
 
     /**
      * Permet de modifier un Item.

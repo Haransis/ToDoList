@@ -2,7 +2,6 @@ package com.example.myhello.data.database;
 
 import android.content.Context;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.example.myhello.data.API.ApiInterface;
 import com.example.myhello.data.API.ListeToDoServiceFactory;
@@ -23,7 +22,7 @@ public class Synchron{
     private static final String TAG = "Synchron";
     private Call<ItemToDo> call;
     private ApiInterface Interface;
-    private RoomListeToDoDb database;
+    private RoomListeModifieeDb database;
     private Context context;
     private Converter converter;
     private List<ItemToDo> listeDesItemsModifies;
@@ -31,7 +30,7 @@ public class Synchron{
 
     public Synchron(Context context) {
         this.context = context;
-        database = RoomListeToDoDb.getDatabase(context);
+        database = RoomListeModifieeDb.getDatabase(context);
         Interface = ListeToDoServiceFactory.createService(ApiInterface.class);
         converter = new Converter();
     }
@@ -107,6 +106,5 @@ public class Synchron{
     public void syncProfilsToApi(String hash){
 
     }
-
 
 }
