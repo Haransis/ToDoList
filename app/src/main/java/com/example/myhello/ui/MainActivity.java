@@ -114,6 +114,71 @@ public class MainActivity extends AppCompatActivity{
         });
     }
 
+
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        // On instancie le broadcast receiver.
+        networkChangeReceiver = new NetworkChangeReceiver();
+        registerReceiver(networkChangeReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+    }
+
+    /**
+     * On affiche les derniers utilisateurs et mot de passe utilisés
+     * i.e. ceux stockés dans les préférences.
+     */
+    @Override
+    protected void onResume() {
+        super.onResume();
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
+        modification = settings.getBoolean("modifié", false);
+
+        edtPseudo.setText(settings.getString("pseudo","alban"));
+        edtPassword.setText(settings.getString("password","alban"));
+    }
+
+    /**
+     * Il est nécessaire d'unregister le broadcast receiver.
+     * On a besoin de le faire pendant le onPause pour qu'il arrête d'écouter au
+     * changement d'activité.
+     */
+    @Override
+    public void onPause() {
+        super.onPause();
+        try{
+            unregisterReceiver(networkChangeReceiver);
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    // permet la création de la barre de menu à partir du xml du menu
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu, menu);
+        return true;
+    }
+
+    // permet de choisir quoi ouvrir
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        switch (id){
+            case R.id.action_account: // dans le cas où l'utilisateur a choisi le menu Compte
+                alerter("Menu Compte");
+                break;
+
+            case R.id.action_settings: // dans le cas où l'utilisateur a choisi les Préférences
+                Intent toSettings=new Intent(this,SettingsActivity.class);
+                startActivity(toSettings);
+                break;
+
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
     /**
      * Permet de recuperer le hash depuis la BdD.
      * Si l'appel réussit, on lance ChoixListActivity.
@@ -123,20 +188,25 @@ public class MainActivity extends AppCompatActivity{
         executor.execute(new Runnable() {
             @Override
             public void run() {
-                ProfilToDoDb profilBDD = database.getProfil().getProfil(pseudo, password);
-                String newHash = profilBDD.getHash();
-                if(newHash.isEmpty()){
-                    Toast.makeText(MainActivity.this, "Pseudo ou mot de passe incorrect", Toast.LENGTH_LONG).show();
-                }
-                else{
-                    SharedPreferences.Editor editor = settings.edit();
-                    editor.remove("hash");
-                    editor.putString("hash", newHash);
-                    editor.apply();
 
-                    // On lance la nouvelle activité
-                    Intent intent = new Intent(getApplicationContext(), ChoixListActivity.class);
-                    startActivity(intent);
+                try {
+                    ProfilToDoDb profilBDD = database.getProfil().getProfil(pseudo, password);
+                    String newHash = profilBDD.getHash();
+                    if (newHash.isEmpty()) {
+                    } else {
+                        SharedPreferences.Editor editor = settings.edit();
+                        editor.remove("hash");
+                        editor.putString("hash", newHash);
+                        editor.apply();
+
+                        // On lance la nouvelle activité
+                        Intent intent = new Intent(getApplicationContext(), ChoixListActivity.class);
+                        startActivity(intent);
+                    }
+                }
+                catch(Exception e){
+                    e.printStackTrace();
+                    Toast.makeText(MainActivity.this, "Pseudo ou mot de passe incorrect", Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -154,10 +224,10 @@ public class MainActivity extends AppCompatActivity{
     /**
      * Permet de recuperer le hash depuis l'API.
      * Si l'appel réussit on lance ChoixListActivity.
-     * @param pseudo
-     * @param password
-     * @param hash
-     * @param settings
+     * @param pseudo le pseudo rentré par l'utilisateur
+     * @param password le mot de passe rentré par l'utilisateur
+     * @param hash le hash associé au profil
+     * @param settings Les paramètres de l'application
      */
     private void recupererHashFromAPI(final String pseudo, final String password, final String hash, final SharedPreferences settings) {
         ApiInterface Interface = ListeToDoServiceFactory.createService(ApiInterface.class);
@@ -214,72 +284,14 @@ public class MainActivity extends AppCompatActivity{
         });
     }
 
-    // On affiche les derniers utilisateurs et mot de passe utilisés
-    // i.e. ceux stockés dans les préférences.
-    @Override
-    protected void onStart() {
-        super.onStart();
-        // On instancie le broadcast receiver.
-        networkChangeReceiver = new NetworkChangeReceiver();
-        registerReceiver(networkChangeReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
-        modification = settings.getBoolean("modifié", false);
-
-        edtPseudo.setText(settings.getString("pseudo","alban"));
-        edtPassword.setText(settings.getString("password","alban"));
-    }
-
-
-    // permet la création de la barre de menu à partir du xml du menu
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu, menu);
-        return true;
-    }
-
-    // permet de choisir quoi ouvrir
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-        switch (id){
-            case R.id.action_account: // dans le cas où l'utilisateur a choisi le menu Compte
-                alerter("Menu Compte");
-                break;
-
-            case R.id.action_settings: // dans le cas où l'utilisateur a choisi les Préférences
-                Intent toSettings=new Intent(this,SettingsActivity.class);
-                startActivity(toSettings);
-                break;
-
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
 
     /**
-     * Il est nécessaire d'unregister le broadcast receiver.
+     *  La classe NetWorkChangeReceiver détecte en continue
+     *      si l'on a accès au réseau.
+     *      On l'implément au sein de chaque activité pour pouvoir y écrire
+     *      les instructions à effectuer lors d'un changement de réseau.
      */
-    @Override
-    public void onPause() {
-        super.onPause();
-        try{
-            unregisterReceiver(networkChangeReceiver);
-        }
-        catch (Exception e){
-            e.printStackTrace();
-        }
-    }
 
-
-    // La classe NetWorkChangeReceiver détecte en continue
-    // si l'on a accès au réseau.
-    // On l'implément au sein de chaque activité pour pouvoir y écrire
-    // les instructions à effectuer lors d'un changement de réseau.
     public class NetworkChangeReceiver extends BroadcastReceiver {
 
         private static final String TAG = "NetworkChangeReceiverFromMain";

@@ -28,6 +28,10 @@ public class Synchron{
     private List<ItemToDo> listeDesItemsModifies;
     ExecutorService executor = Executors.newSingleThreadExecutor();
 
+    /**
+     * on instancie l'interface API et la base de donnée dans le constructeur
+     * @param context
+     */
     public Synchron(Context context) {
         this.context = context;
         database = RoomListeModifieeDb.getDatabase(context);
@@ -35,17 +39,35 @@ public class Synchron{
         converter = new Converter();
     }
 
+
+    /**
+     * Renvoie sous forme de String "checked"
+     * @param item
+     * @return
+     */
     private String getFaitConverti(ItemToDo item) {
         if(item.getFait()){return "1";}
         else{return "0";}
     }
 
+    /**
+     * Méthode appelée lorsqu'on aura implémenté la fonction d'addition/modification/délétion
+     * de profils, listes et items.
+     * @param hash
+     * @param context
+     */
     public void syncAllToApi(String hash, final Context context){
         syncItemsToApi(hash);
         syncListesToApi(hash);
         syncProfilsToApi(hash);
     }
 
+    /**
+     * Seule cette méthode est utilisée pour l'instant,
+     * lors du changement d'état d'un item.
+     * @param hash
+     * @return
+     */
     public int syncItemsToApi(String hash){
 
         Future<List<ItemToDoDb>> resultat = executor.submit(new Callable<List<ItemToDoDb>>() {

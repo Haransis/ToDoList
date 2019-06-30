@@ -116,8 +116,10 @@ public class ChoixListActivity extends AppCompatActivity implements RecyclerView
         unregisterReceiver(networkChangeReceiver);
     }
 
-    // La méthode CreerAlertDialog crée une fenêtre où l'utisateur peut
-    // rentrer le nom de la nouvelle liste.
+    /**
+     *  La méthode CreerAlertDialog crée une fenêtre où l'utisateur peut
+     *      rentrer le nom de la nouvelle liste.
+     */
     private void CreerAlertDialog() {
 
         final EditText editText = new EditText(this);
@@ -217,8 +219,11 @@ public class ChoixListActivity extends AppCompatActivity implements RecyclerView
 
     }
 
-    // Instanciation de la méthode de l'interface onListListener.
-    // Elle est appelée lors d'un clique sur un élément du RecyclerView.
+    /**
+     *  Instanciation de la méthode de l'interface onListListener.
+     *      Elle est appelée lors d'un clique sur un élément du RecyclerView.
+     * @param position l'entier indiquant sur quel item a eu lieu le clique.
+     */
     public void onListClick(int position) {
         // Lors du clique, on lance ShowListActivity.
         Intent intent = new Intent(this,ShowListActivity.class);
@@ -269,8 +274,14 @@ public class ChoixListActivity extends AppCompatActivity implements RecyclerView
         });
     }
 
-    public class NetworkChangeReceiver extends BroadcastReceiver {
 
+    /**
+     *  La classe NetWorkChangeReceiver détecte en continue
+     *      si l'on a accès au réseau.
+     *      On l'implément au sein de chaque activité pour pouvoir y écrire
+     *      les instructions à effectuer lors d'un changement de réseau.
+     */
+    public class NetworkChangeReceiver extends BroadcastReceiver {
 
         private static final String TAG = "NetworkChangeReceiver";
         public boolean isConnected;

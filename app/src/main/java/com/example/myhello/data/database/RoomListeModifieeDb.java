@@ -7,7 +7,10 @@ import androidx.room.Room;
 import androidx.room.RoomDatabase;
 
 
-
+/**
+ * Cette BdD permet d'enregistrer toutes les modifications effectuées dans le cache.
+ * Son fonctionnement est le même que RoomListeToDoDb.
+ */
 @Database(entities = { ProfilToDoDb.class, ListeToDoDb.class, ItemToDoDb.class }, version = 1)
 public abstract class RoomListeModifieeDb extends RoomDatabase {
 

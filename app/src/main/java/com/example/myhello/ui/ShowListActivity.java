@@ -47,13 +47,10 @@ import retrofit2.Response;
 public class ShowListActivity extends AppCompatActivity implements RecyclerViewAdapter2.OnItemListener{
 
     private static final String TAG = "ShowListActivity";
-    private String urlTest = "url test";
     private String idListe;
-    private ListeToDo ListeDesToDo;
     private List<ItemToDo> listeDesItems;
     private RecyclerViewAdapter2 adapter;
     private BroadcastReceiver networkChangeReceiver;
-    private Call<ListeToDo> call;
     private Call<ItemToDo> call2;
     private Synchron synchroniseur;
     private boolean modification = false;
@@ -70,8 +67,8 @@ public class ShowListActivity extends AppCompatActivity implements RecyclerViewA
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_show_list);
 
+        // on instancie les objets de traitements
         converter = new Converter();
-
         synchroniseur = new Synchron(getApplicationContext());
 
         // Cette condition permet d'éviter que l'application ne crashe
@@ -88,8 +85,8 @@ public class ShowListActivity extends AppCompatActivity implements RecyclerViewA
 
         // Construction de listes d'ItemToDo vide à envoyer au RecyclerViewAdapter1
         // et pour stocker les modifications effectuées en local.
-        ListeDesToDo = new ListeToDo();
-        listeDesItems = ListeDesToDo.getLesItems();
+        ListeToDo listeDesToDo = new ListeToDo();
+        listeDesItems = listeDesToDo.getLesItems();
 
         // On réutilise la même méthode que dans ChoixListActivity
         RecyclerView recyclerView = findViewById(R.id.recycler_view);
@@ -124,6 +121,7 @@ public class ShowListActivity extends AppCompatActivity implements RecyclerViewA
     protected void onStop(){
         super.onStop();
         unregisterReceiver(networkChangeReceiver);
+
         SharedPreferences.Editor editor = settings.edit();
         editor.remove("modifié");
         Log.d(TAG, "onStop: "+modification);
@@ -157,6 +155,7 @@ public class ShowListActivity extends AppCompatActivity implements RecyclerViewA
 
     private void add(String nomNewItem) {
         ApiInterface Interface = ListeToDoServiceFactory.createService(ApiInterface.class);
+        String urlTest = "url test";
         call2 = Interface.addItem(hash, Integer.parseInt(idListe), nomNewItem, urlTest);
         call2.enqueue(new Callback<ItemToDo>() {
             @Override
@@ -174,7 +173,7 @@ public class ShowListActivity extends AppCompatActivity implements RecyclerViewA
 
     private void syncFromAPI() {
         Log.d(TAG, "syncFromAPI: ");
-        call = Interface.getItems(hash,Integer.parseInt(idListe));
+        Call<ListeToDo> call = Interface.getItems(hash, Integer.parseInt(idListe));
         call.enqueue(new Callback<ListeToDo>() {
             @Override
             public void onResponse(Call<ListeToDo> call, Response<ListeToDo> response) {
@@ -291,9 +290,13 @@ public class ShowListActivity extends AppCompatActivity implements RecyclerViewA
         return networkInfo != null && networkInfo.isConnectedOrConnecting();
     }
 
+    /**
+     *  La classe NetWorkChangeReceiver détecte en continue
+     *      si l'on a accès au réseau.
+     *      On l'implément au sein de chaque activité pour pouvoir y écrire
+     *      les instructions à effectuer lors d'un changement de réseau.
+     */
     public class NetworkChangeReceiver extends BroadcastReceiver {
-
-
         private static final String TAG = "NetworkChangeReceiver";
         public boolean isConnected;
 
