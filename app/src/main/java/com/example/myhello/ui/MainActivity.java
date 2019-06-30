@@ -90,6 +90,13 @@ public class MainActivity extends AppCompatActivity{
                 final String pseudo = edtPseudo.getText().toString();
                 final String password = edtPassword.getText().toString();
 
+                SharedPreferences.Editor editor = settings.edit();
+                editor.remove("pseudo");
+                editor.remove("password");
+                editor.putString("pseudo",pseudo);
+                editor.putString("password",password);
+                editor.apply();
+
                 // On change l'url de la factory à partir des préférences
                 ListeToDoServiceFactory.changeUrl(settings.getString("url","http://tomnab.fr/todo-api/"));
 
@@ -123,7 +130,7 @@ public class MainActivity extends AppCompatActivity{
                 }
                 else{
                     SharedPreferences.Editor editor = settings.edit();
-                    editor.clear();
+                    editor.remove("hash");
                     editor.putString("hash", newHash);
                     editor.apply();
 
@@ -164,7 +171,7 @@ public class MainActivity extends AppCompatActivity{
                     // On stocke les nouvelles informations de connexion dans les préférences pour qu'elles puissent
                     // réapparaître lors du lancement de l'application.
                     SharedPreferences.Editor editor = settings.edit();
-                    editor.clear();
+                    editor.remove("hash");
                     editor.putString("hash", hashRecu.getHash());
                     editor.apply();
 
@@ -212,10 +219,6 @@ public class MainActivity extends AppCompatActivity{
     @Override
     protected void onStart() {
         super.onStart();
-        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
-        edtPseudo.setText(settings.getString("pseudo","alban"));
-        edtPassword.setText(settings.getString("password","alban"));
-
         // On instancie le broadcast receiver.
         networkChangeReceiver = new NetworkChangeReceiver();
         registerReceiver(networkChangeReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
@@ -226,6 +229,9 @@ public class MainActivity extends AppCompatActivity{
         super.onResume();
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
         modification = settings.getBoolean("modifié", false);
+
+        edtPseudo.setText(settings.getString("pseudo","alban"));
+        edtPassword.setText(settings.getString("password","alban"));
     }
 
 
