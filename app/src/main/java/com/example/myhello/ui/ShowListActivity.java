@@ -156,16 +156,19 @@ public class ShowListActivity extends AppCompatActivity implements RecyclerViewA
     private void add(String nomNewItem) {
         ApiInterface Interface = ListeToDoServiceFactory.createService(ApiInterface.class);
         String urlTest = "url test";
+        findViewById(R.id.progess).setVisibility(View.VISIBLE);
         call2 = Interface.addItem(hash, Integer.parseInt(idListe), nomNewItem, urlTest);
         call2.enqueue(new Callback<ItemToDo>() {
             @Override
             public void onResponse(Call<ItemToDo> call, Response<ItemToDo> response) {
                 Log.d(TAG, "onResponse: "+response.code());
+                findViewById(R.id.progess).setVisibility(View.GONE);
             }
 
             @Override public void onFailure(Call<ItemToDo> call, Throwable t) {
                 Toast.makeText(ShowListActivity.this,"Error code : "+t,Toast.LENGTH_SHORT).show();
                 Log.d(TAG, "onFailure() called with: call = [" + call + "], t = [" + t + "]");
+                findViewById(R.id.progess).setVisibility(View.GONE);
             }
         });
     }
@@ -173,6 +176,7 @@ public class ShowListActivity extends AppCompatActivity implements RecyclerViewA
 
     private void syncFromAPI() {
         Log.d(TAG, "syncFromAPI: ");
+        findViewById(R.id.progess).setVisibility(View.VISIBLE);
         Call<ListeToDo> call = Interface.getItems(hash, Integer.parseInt(idListe));
         call.enqueue(new Callback<ListeToDo>() {
             @Override
@@ -190,11 +194,13 @@ public class ShowListActivity extends AppCompatActivity implements RecyclerViewA
                     Log.d("TAG", "onResponse: "+response.code());
                     Toast.makeText(ShowListActivity.this,"Error code : "+response.code(),Toast.LENGTH_SHORT).show();
                 }
+                findViewById(R.id.progess).setVisibility(View.GONE);
             }
 
             @Override public void onFailure(Call<ListeToDo> call, Throwable t) {
                 Toast.makeText(ShowListActivity.this,"Error code : "+t,Toast.LENGTH_SHORT).show();
                 Log.d("TAG", "onFailure() called with: call = [" + call + "], t = [" + t + "]");
+                findViewById(R.id.progess).setVisibility(View.GONE);
             }
         });
     }
@@ -246,6 +252,8 @@ public class ShowListActivity extends AppCompatActivity implements RecyclerViewA
 
     @Override
     public void onItemClick(final int position) {
+        findViewById(R.id.progess).setVisibility(View.VISIBLE);
+
         //Lors du clique on actualise l'API/la BdD
         final ItemToDo itemACocher = listeDesItems.get(position);
 
@@ -261,9 +269,11 @@ public class ShowListActivity extends AppCompatActivity implements RecyclerViewA
                 @Override
                 public void onResponse(Call<ItemToDo> call, Response<ItemToDo> response) {
                     Log.d(TAG, "onResponse: "+response.code());
+                    findViewById(R.id.progess).setVisibility(View.GONE);
                 }
                 @Override public void onFailure(Call<ItemToDo> call, Throwable t) {
                     Log.d("TAG", "onFailure() called with: call = [" + call + "], t = [" + t + "]");
+                    findViewById(R.id.progess).setVisibility(View.GONE);
                 }
             });
         }

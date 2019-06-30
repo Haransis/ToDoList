@@ -231,6 +231,7 @@ public class MainActivity extends AppCompatActivity{
      */
     private void recupererHashFromAPI(final String pseudo, final String password, final String hash, final SharedPreferences settings) {
         ApiInterface Interface = ListeToDoServiceFactory.createService(ApiInterface.class);
+        findViewById(R.id.progess).setVisibility(View.VISIBLE);
         call = Interface.getHash(hash,pseudo,password);
         call.enqueue(new Callback<Hash>() {
             @Override
@@ -274,12 +275,14 @@ public class MainActivity extends AppCompatActivity{
                     Intent intent = new Intent(getApplicationContext(),MainActivity.class);
                     startActivity(intent);
                 }
+                findViewById(R.id.progess).setVisibility(View.GONE);
 
             }
             // Si l'on échoue à faire le call.
             @Override public void onFailure(Call<Hash> call, Throwable t) {
                 Toast.makeText(MainActivity.this,"Error code : ",Toast.LENGTH_LONG).show();
                 Log.d(TAG, "onFailure() called with: call = [" + call + "], t = [" + t + "]");
+                findViewById(R.id.progess).setVisibility(View.GONE);
             }
         });
     }

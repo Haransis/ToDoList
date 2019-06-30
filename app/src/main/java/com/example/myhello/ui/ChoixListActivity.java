@@ -157,6 +157,8 @@ public class ChoixListActivity extends AppCompatActivity implements RecyclerView
      * @param nomNewListe le titre de la nouvelle liste
      */
     private void add(String nomNewListe) {
+        findViewById(R.id.progess).setVisibility(View.VISIBLE);
+
         // On récupère le hash à utiliser.
         final SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         String hash = settings.getString("hash","44692ee5175c131da83acad6f80edb12");
@@ -166,10 +168,12 @@ public class ChoixListActivity extends AppCompatActivity implements RecyclerView
             @Override
             public void onResponse(Call<ProfilListeToDo> call, Response<ProfilListeToDo> response) {
                 Log.d(TAG, "onResponse: "+response.code());
+                findViewById(R.id.progess).setVisibility(View.GONE);
             }
 
             @Override public void onFailure(Call<ProfilListeToDo> call, Throwable t) {
                 Log.d(TAG, "onFailure() called with: call = [" + call + "], t = [" + t + "]");
+                findViewById(R.id.progess).setVisibility(View.GONE);
             }
         });
     }
@@ -179,6 +183,8 @@ public class ChoixListActivity extends AppCompatActivity implements RecyclerView
      * Récupère les données depuis l'API.
      */
     private void syncFromAPI() {
+        findViewById(R.id.progess).setVisibility(View.VISIBLE);
+
         // On fait la requête permettant de récupérer
         // la liste des listes de l'utilisateur connecté.
         call = Interface.getLists(hash);
@@ -207,6 +213,7 @@ public class ChoixListActivity extends AppCompatActivity implements RecyclerView
                     Log.d(TAG, "onResponse: "+response.code());
                     Toast.makeText(ChoixListActivity.this,"Error code : "+response.code(),Toast.LENGTH_SHORT).show();
                 }
+                findViewById(R.id.progess).setVisibility(View.GONE);
             }
 
             // Si l'on ne réussit pas à envoyer la requête
@@ -214,6 +221,7 @@ public class ChoixListActivity extends AppCompatActivity implements RecyclerView
                 // On affiche un Toast.
                 Toast.makeText(ChoixListActivity.this,"Error code : ",Toast.LENGTH_SHORT).show();
                 Log.d(TAG, "onFailure() called with: call = [" + call + "], t = [" + t + "]");
+                findViewById(R.id.progess).setVisibility(View.GONE);
             }
         });
 
